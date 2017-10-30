@@ -13,7 +13,7 @@
         <!--Virtual Tourist-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="MapViewController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -32,17 +32,24 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <navigationItem key="navigationItem" title="Virtual Tourist" id="nnH-cv-ZTM">
-                        <barButtonItem key="rightBarButtonItem" title="Edit" id="npA-xK-15z"/>
+                        <barButtonItem key="rightBarButtonItem" title="Edit" id="npA-xK-15z">
+                            <connections>
+                                <action selector="editButtonPressed:" destination="BYZ-38-t0r" id="jov-KV-BIe"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
+                    <connections>
+                        <outlet property="mapView" destination="hbh-cE-ENm" id="G8o-jj-Ayx"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="586" y="134"/>
         </scene>
-        <!--View Controller-->
+        <!--Photo Album View Controller-->
         <scene sceneID="gGw-OI-XRq">
             <objects>
-                <viewController id="M1r-oG-5rw" sceneMemberID="viewController">
+                <viewController id="M1r-oG-5rw" customClass="PhotoAlbumViewController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Mlb-xm-dju">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -115,6 +122,11 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="aHj-ze-BhX"/>
                     </view>
+                    <connections>
+                        <outlet property="collectionView" destination="eP8-MM-L3F" id="B41-Jd-3un"/>
+                        <outlet property="mapView" destination="0SM-Tk-yq9" id="S3E-I1-p2S"/>
+                        <outlet property="toolButton" destination="NEg-CU-4Sb" id="cBR-5J-4KJ"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="K5Q-4D-GvC" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
