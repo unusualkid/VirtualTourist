@@ -17,7 +17,8 @@ class PhotoAlbumViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        navigationItem.title = "Virtual Tourist"
+        navigationItem.backBarButtonItem?.title = "Back"
         // Do any additional setup after loading the view.
     }
 

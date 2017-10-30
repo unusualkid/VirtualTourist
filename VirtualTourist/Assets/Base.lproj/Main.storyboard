@@ -49,21 +49,13 @@
         <!--Photo Album View Controller-->
         <scene sceneID="gGw-OI-XRq">
             <objects>
-                <viewController id="M1r-oG-5rw" customClass="PhotoAlbumViewController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="PhotoAlbumViewController" id="M1r-oG-5rw" customClass="PhotoAlbumViewController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Mlb-xm-dju">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uXM-aZ-K0R">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
-                                <items>
-                                    <navigationItem title="Title" id="ftV-5U-J59">
-                                        <barButtonItem key="leftBarButtonItem" title="Back" id="UJm-CR-H2E"/>
-                                    </navigationItem>
-                                </items>
-                            </navigationBar>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="0SM-Tk-yq9">
-                                <rect key="frame" x="0.0" y="44" width="375" height="156"/>
+                                <rect key="frame" x="0.0" y="119" width="375" height="81"/>
                             </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="eP8-MM-L3F">
                                 <rect key="frame" x="0.0" y="197" width="375" height="426"/>
@@ -110,12 +102,9 @@
                             <constraint firstItem="kxV-gP-lwu" firstAttribute="top" secondItem="eP8-MM-L3F" secondAttribute="bottom" id="5Mg-ne-hWT"/>
                             <constraint firstItem="0SM-Tk-yq9" firstAttribute="trailing" secondItem="aHj-ze-BhX" secondAttribute="trailing" id="Dx2-8R-oIs"/>
                             <constraint firstItem="eP8-MM-L3F" firstAttribute="trailing" secondItem="aHj-ze-BhX" secondAttribute="trailing" id="FI4-IT-HF9"/>
-                            <constraint firstItem="uXM-aZ-K0R" firstAttribute="leading" secondItem="aHj-ze-BhX" secondAttribute="leading" id="JdH-rJ-IMe"/>
-                            <constraint firstItem="uXM-aZ-K0R" firstAttribute="top" secondItem="Mlb-xm-dju" secondAttribute="top" id="Jwa-U1-7fL"/>
                             <constraint firstItem="eP8-MM-L3F" firstAttribute="top" secondItem="0SM-Tk-yq9" secondAttribute="bottom" id="LdV-3d-zit"/>
-                            <constraint firstItem="0SM-Tk-yq9" firstAttribute="top" secondItem="uXM-aZ-K0R" secondAttribute="bottom" id="Y8K-tU-ZGr"/>
                             <constraint firstItem="kxV-gP-lwu" firstAttribute="leading" secondItem="aHj-ze-BhX" secondAttribute="leading" id="hNf-9J-8cy"/>
-                            <constraint firstItem="uXM-aZ-K0R" firstAttribute="trailing" secondItem="aHj-ze-BhX" secondAttribute="trailing" id="nl6-vQ-Xcs"/>
+                            <constraint firstItem="0SM-Tk-yq9" firstAttribute="top" secondItem="aHj-ze-BhX" secondAttribute="top" id="ozI-EW-E5j"/>
                             <constraint firstItem="0SM-Tk-yq9" firstAttribute="leading" secondItem="aHj-ze-BhX" secondAttribute="leading" id="pfG-0I-ue5"/>
                             <constraint firstItem="kxV-gP-lwu" firstAttribute="trailing" secondItem="aHj-ze-BhX" secondAttribute="trailing" id="q4i-mi-pHa"/>
                             <constraint firstItem="eP8-MM-L3F" firstAttribute="leading" secondItem="aHj-ze-BhX" secondAttribute="leading" id="woD-xY-ZbM"/>
