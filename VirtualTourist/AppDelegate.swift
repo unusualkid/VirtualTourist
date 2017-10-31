@@ -10,9 +10,9 @@ import UIKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
+    
     var window: UIWindow?
-
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Usually this is not overridden. Using the "did finish launching" method is more typical
         print("App Delegate: will finish launching")
@@ -58,7 +58,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } else {
             print("This is the first launch ever!")
             UserDefaults.standard.set(true, forKey: "HasLaunchedBefore")
+            UserDefaults.standard.set(25.0340, forKey: Constants.Map.Key.latitude)
+            UserDefaults.standard.set(121.5645, forKey: Constants.Map.Key.longitude)
+ 
             UserDefaults.standard.synchronize()
+            
         }
+        
+//        print("")
+//        print(UserDefaults.standard.value(forKey: Constants.Map.Key.latitude))
+//        print(UserDefaults.standard.value(forKey: Constants.Map.Key.longitude))
+//        print(UserDefaults.standard.value(forKey: Constants.Map.Key.latitudeDelta))
+//        print(UserDefaults.standard.value(forKey: Constants.Map.Key.longitudeDelta))
+//        print("")
+        
+        UserDefaults.standard.set(true, forKey: Constants.Map.Key.isFirstLoad)
+        print("checkIfFirstLaunch()")
+        print("UserDefaults.standard.bool(forKey: Constants.Map.Key.isFirstLoad): \(UserDefaults.standard.bool(forKey: Constants.Map.Key.isFirstLoad)) ")
     }
 }

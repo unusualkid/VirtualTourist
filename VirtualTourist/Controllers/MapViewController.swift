@@ -62,7 +62,7 @@ class MapViewController: UIViewController {
 }
 
 extension MapViewController: MKMapViewDelegate {
-
+    
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let reuseId = "pin"
         
@@ -74,7 +74,6 @@ extension MapViewController: MKMapViewDelegate {
             pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
             pinView!.pinTintColor = .red
             pinView!.animatesDrop = true
-            
         }
         else {
             pinView!.annotation = annotation
@@ -85,6 +84,43 @@ extension MapViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         let controller = self.storyboard!.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
         self.navigationController!.pushViewController(controller, animated: true)
+    }
+    
+    func mapViewWillStartRenderingMap(_ mapView: MKMapView) {
+        print("mapViewWillStartRenderingMap")
+        print("UserDefaults.standard.bool(forKey: Constants.Map.Key.isFirstLoad): \(UserDefaults.standard.bool(forKey: Constants.Map.Key.isFirstLoad)) ")
+        if UserDefaults.standard.bool(forKey: Constants.Map.Key.isFirstLoad) {
+            if let latitude = UserDefaults.standard.value(forKey: Constants.Map.Key.latitude),
+                let longitude = UserDefaults.standard.value(forKey: Constants.Map.Key.longitude),
+                let latitudeDelta = UserDefaults.standard.value(forKey: Constants.Map.Key.longitudeDelta),
+                let longitudeDelta = UserDefaults.standard.value(forKey: Constants.Map.Key.longitudeDelta) {
+                mapView.centerCoordinate.latitude = latitude as! CLLocationDegrees
+                mapView.centerCoordinate.longitude = longitude as! CLLocationDegrees
+                mapView.region.span.latitudeDelta = latitudeDelta as! CLLocationDegrees
+                mapView.region.span.longitudeDelta = longitudeDelta as! CLLocationDegrees
+            }
+        }
+    }
+    
+    func mapViewWillStartLoadingMap(_ mapView: MKMapView) {
+        print("mapViewWillStartLoadingMap")
+    }
+    
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        print("mapView regionDidChange")
+        UserDefaults.standard.set(false, forKey: Constants.Map.Key.isFirstLoad)
+        UserDefaults.standard.set(mapView.centerCoordinate.latitude, forKey: Constants.Map.Key.latitude)
+        UserDefaults.standard.set(mapView.centerCoordinate.longitude, forKey: Constants.Map.Key.longitude)
+        UserDefaults.standard.set(mapView.region.span.latitudeDelta, forKey: Constants.Map.Key.latitudeDelta)
+        UserDefaults.standard.set(mapView.region.span.longitudeDelta, forKey: Constants.Map.Key.longitudeDelta)
+        UserDefaults.standard.synchronize()
+        
+//        print("")
+//        print(UserDefaults.standard.value(forKey: Constants.Map.Key.latitude))
+//        print(UserDefaults.standard.value(forKey: Constants.Map.Key.longitude))
+//        print(UserDefaults.standard.value(forKey: Constants.Map.Key.latitudeDelta))
+//        print(UserDefaults.standard.value(forKey: Constants.Map.Key.longitudeDelta))
+//        print("")
     }
 }
 
