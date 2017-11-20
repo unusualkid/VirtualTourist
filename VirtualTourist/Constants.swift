@@ -53,10 +53,10 @@ struct Constants {
         static let SearchMethod = "flickr.photos.search"
         static let APIKey = "01c7fb4e3a07f5b087481bf99afbcb6c"
         static let ResponseFormat = "json"
-        static let DisableJSONCallback = "1"        /* 1 means "yes" */
+        static let DisableJSONCallback = 1        /* 1 means "yes" */
         static let MediumURL = "url_m"
-        static let UseSafeSearch = "1"
-        static let PerPage = "24"
+        static let UseSafeSearch = 1
+        static let PerPage = 24
     }
     
     // MARK: Flickr Response Keys

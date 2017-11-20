@@ -62,10 +62,10 @@ extension MapViewController: MKMapViewDelegate {
     // Segue to the PhotoAlbumView when a pin/annotation is clicked
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         let controller = self.storyboard!.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
-        controller.latitude = mapView.centerCoordinate.latitude
-        controller.longitude = mapView.centerCoordinate.longitude
-        controller.latitudeDelta = mapView.region.span.latitudeDelta
-        controller.longitudeDelta = mapView.region.span.longitudeDelta
+        FlickrClient.sharedInstance.latitude = mapView.centerCoordinate.latitude
+        FlickrClient.sharedInstance.longitude = mapView.centerCoordinate.longitude
+        FlickrClient.sharedInstance.latitudeDelta = mapView.region.span.latitudeDelta
+        FlickrClient.sharedInstance.longitudeDelta = mapView.region.span.longitudeDelta
         controller.annotationView = view
         self.navigationController!.pushViewController(controller, animated: true)
     }
