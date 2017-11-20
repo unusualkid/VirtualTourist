@@ -9,7 +9,7 @@
 import UIKit
 import MapKit
 
-class PhotoAlbumViewController: CoreDataCollectionViewController {
+class PhotoAlbumViewController: UIViewController {
     
     @IBOutlet weak var mapView: MKMapView!
     
@@ -280,19 +280,19 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return photos.count
+        return 3
+//        return photos.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
-        let photo = self.photos[(indexPath as NSIndexPath).row]
-        print("photo: \(photo)")
-        // Set the name and image
-        cell.imageView.image = photo
+//        let photo = self.photos[(indexPath as NSIndexPath).row]
+//        print("photo: \(photo)")
+//        // Set the name and image
+//        cell.imageView.image = photo
         
         return cell
     }
-    
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath:IndexPath) {
         
