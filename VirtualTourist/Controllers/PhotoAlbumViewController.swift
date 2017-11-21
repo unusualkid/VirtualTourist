@@ -13,29 +13,49 @@ class PhotoAlbumViewController: UIViewController {
     
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var toolButton: UIBarButtonItem!
+    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     
     var annotationView = MKAnnotationView()
+    var photos = [UIImage]()
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
+        
         self.searchByLatLon()
         title = "Virtual Tourist"
         navigationItem.backBarButtonItem?.title = "Back"
     }
     
-    @IBAction func testButtonPressed(_ sender: Any) {
-//        print("photos: \(photos)")
-//        print("photos.count: \(photos.count)")
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        let space:CGFloat = 1.0
+        let dimension = (collectionView.bounds.size.width - (2 * space)) / 3.0
+        flowLayout.minimumInteritemSpacing = space
+        flowLayout.minimumLineSpacing = space
+//        flowLayout.estimatedItemSize = UICollectionViewFlowLayoutAutomaticSize
+//        flowLayout.estimatedItemSize = CGSize(width: dimension, height: dimension)
     }
-    
     func searchByLatLon() {
         print("searchByLatLon()")
         FlickrClient.sharedInstance.getImages { (photos, error) in
             print("FlickrClient.sharedInstance.getImages")
             if let photos = photos {
                 print("if let photos = photos")
-                performUIUpdatesOnMain {
-                    print("IMAGES: \(photos)")
+                
+                for photo in photos {
+                    // if an image exists at the url, set the image and title
+                    let imageURL = URL(string: photo["url_m"] as! String)
+                    
+                    if let imageData = try? Data(contentsOf: imageURL!) {
+                        let image = UIImage(data: imageData)
+                        performUIUpdatesOnMain {
+                            self.photos.append(image!)
+                            self.collectionView.reloadData()
+                        }
+                    }
+                    //                    print("IMAGES: \(photos)")
                 }
             } else {
                 print("else")
@@ -63,13 +83,13 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
     
     func mapViewWillStartRenderingMap(_ mapView: MKMapView) {
         print("mapViewWillStartRenderingMap")
-
+        
         mapView.isZoomEnabled = false
         mapView.isScrollEnabled = false
-//        mapView.centerCoordinate.latitude = latitude
-//        mapView.centerCoordinate.longitude = longitude
-//        mapView.region.span.latitudeDelta = latitudeDelta
-//        mapView.region.span.longitudeDelta = longitudeDelta
+        //        mapView.centerCoordinate.latitude = latitude
+        //        mapView.centerCoordinate.longitude = longitude
+        //        mapView.region.span.latitudeDelta = latitudeDelta
+        //        mapView.region.span.longitudeDelta = longitudeDelta
         mapView.addAnnotation(annotationView.annotation!)
         
         print("mapView.centerCoordinate.latitude: \(mapView.centerCoordinate.latitude)")
@@ -81,16 +101,16 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 3
-//        return photos.count
+        return photos.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
-//        let photo = self.photos[(indexPath as NSIndexPath).row]
-//        print("photo: \(photo)")
-//        // Set the name and image
-//        cell.imageView.image = photo
+        let photo = self.photos[(indexPath as NSIndexPath).row]
+        print("photo: \(photo)")
+
+        // Set the name and image
+        cell.imageView.image = photo
         
         return cell
     }
