@@ -20,8 +20,6 @@ class FlickrClient: NSObject {
     
     var latitude: Double = 0.0
     var longitude: Double = 0.0
-    var latitudeDelta: Double = 0.0
-    var longitudeDelta: Double = 0.0
     var photos = [UIImage]()
     
     override init() {
