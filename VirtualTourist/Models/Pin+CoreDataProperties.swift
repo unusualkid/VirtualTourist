@@ -2,7 +2,7 @@
 //  Pin+CoreDataProperties.swift
 //  VirtualTourist
 //
-//  Created by Kenneth Chen on 11/18/17.
+//  Created by Kenneth Chen on 11/23/17.
 //  Copyright © 2017 Cotery. All rights reserved.
 //
 //
@@ -18,7 +18,6 @@ extension Pin {
     }
 
     @NSManaged public var createdDate: NSDate?
-    @NSManaged public var id: String?
     @NSManaged public var lat: Double
     @NSManaged public var lon: Double
     @NSManaged public var photos: NSSet?

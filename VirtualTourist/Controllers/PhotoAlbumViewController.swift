@@ -21,7 +21,7 @@ class PhotoAlbumViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
         
-        self.searchByLatLon()
+//        self.searchByLatLon()
         title = "Virtual Tourist"
         navigationItem.backBarButtonItem?.title = "Back"
     }

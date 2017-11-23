@@ -1,12 +1,14 @@
 //
 //  CoreDataStack.swift
-//  VirtualTourist
+//
 //
 //  Created by Fernando Rodríguez Romero on 21/02/16.
 //  Copyright © 2016 udacity.com. All rights reserved.
 //
 
 import CoreData
+import UIKit
+import MapKit
 
 // MARK: - CoreDataStack
 
@@ -154,6 +156,10 @@ extension CoreDataStack {
             do {
                 try self.context.save()
                 print("Autosaving")
+                let delegate = UIApplication.shared.delegate as! AppDelegate
+                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
+                let results = try delegate.stack.backgroundContext.fetch(fetchRequest) as! [Pin]
+                print("results: \(results)")
             } catch {
                 print("Error while autosaving")
             }
@@ -167,4 +173,3 @@ extension CoreDataStack {
         }
     }
 }
-
