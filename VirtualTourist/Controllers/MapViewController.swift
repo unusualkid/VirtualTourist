@@ -57,25 +57,24 @@ class MapViewController: UIViewController {
             annotation.coordinate = coordinates
             mapView.addAnnotation(annotation)
             
-            print("mapView.annotations: \(mapView.annotations)")
             
-//            if (pin.photos?.count)! == 0 {
-//                FlickrClient.sharedInstance.getImages { (photos, error) in
-//                    print("FlickrClient.sharedInstance.getImages")
-//                    if let photos = photos {
-//                        for photo in photos {
-//                            print("photo: \(photo)")
-//                            let url = URL(string: photo["url_m"] as! String)
-//                            let newPhoto = Photo(url: String(describing: url), context: delegate.stack.context)
-//
-//                            newPhoto.pin = pin
-//                            print("newPhoto: \(newPhoto)")
-//                        }
-//                    } else {
-//                        print(error ?? "empty error")
-//                    }
-//                }
-//            }
+            if (pin.photos?.count)! == 0 {
+                FlickrClient.sharedInstance.getImages { (photos, error) in
+                    print("FlickrClient.sharedInstance.getImages")
+                    if let photos = photos {
+                        for photo in photos {
+                            print("photo: \(photo)")
+                            let url = URL(string: photo["url_m"] as! String)
+                            let newPhoto = Photo(url: String(describing: url), context: delegate.stack.context)
+
+                            newPhoto.pin = pin
+                            print("newPhoto: \(newPhoto)")
+                        }
+                    } else {
+                        print(error ?? "empty error")
+                    }
+                }
+            }
         }
     }
 }
@@ -94,6 +93,12 @@ extension MapViewController {
             print("Could not fetch \(error), \(error.userInfo)")
         }
         return nil
+    }
+}
+
+extension MapViewController {
+    func searchImageLatLon(pin: Pin) {
+        
     }
 }
 
@@ -117,11 +122,11 @@ extension MapViewController: MKMapViewDelegate {
     
     // Segue to the PhotoAlbumView when a pin/annotation is clicked
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-//        let controller = self.storyboard!.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
-//        FlickrClient.sharedInstance.latitude = (view.annotation?.coordinate.latitude)!
-//        FlickrClient.sharedInstance.longitude = (view.annotation?.coordinate.longitude)!
-//
-//        self.navigationController!.pushViewController(controller, animated: true)
+        let controller = self.storyboard!.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
+        FlickrClient.sharedInstance.latitude = (view.annotation?.coordinate.latitude)!
+        FlickrClient.sharedInstance.longitude = (view.annotation?.coordinate.longitude)!
+
+        self.navigationController!.pushViewController(controller, animated: true)
     }
     
     func mapViewWillStartRenderingMap(_ mapView: MKMapView) {

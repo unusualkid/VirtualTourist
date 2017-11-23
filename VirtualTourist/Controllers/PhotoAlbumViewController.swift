@@ -91,12 +91,7 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
         let coordinate = CLLocationCoordinate2D(latitude: FlickrClient.sharedInstance.latitude, longitude: FlickrClient.sharedInstance.longitude)
         
         mapView.centerCoordinate = coordinate
-//
-//        mapView.centerCoordinate.latitude = FlickrClient.sharedInstance.latitude
-//        mapView.centerCoordinate.longitude = FlickrClient.sharedInstance.longitude
-//
 
-        
         // Here we create the annotation and set its coordiate, title, and subtitle properties
         let annotation = MKPointAnnotation()
         annotation.coordinate = coordinate
