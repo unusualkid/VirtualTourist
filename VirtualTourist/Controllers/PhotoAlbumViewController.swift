@@ -9,14 +9,12 @@
 import UIKit
 import MapKit
 
-class PhotoAlbumViewController: UIViewController {
+class PhotoAlbumViewController: CoreDataCollectionViewController {
     
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var toolButton: UIBarButtonItem!
-    @IBOutlet weak var collectionView: UICollectionView!
-    @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
-    
-    var photos = [UIImage]()
+//    @IBOutlet weak var collectionView: UICollectionView!
+//    @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
@@ -33,36 +31,10 @@ class PhotoAlbumViewController: UIViewController {
 //        let dimension = (collectionView.bounds.size.width - (2 * space)) / 3.0
 //        flowLayout.minimumInteritemSpacing = space
 //        flowLayout.minimumLineSpacing = space
-        flowLayout.estimatedItemSize = UICollectionViewFlowLayoutAutomaticSize
+//        flowLayout.estimatedItemSize = UICollectionViewFlowLayoutAutomaticSize
 //        flowLayout.estimatedItemSize = CGSize(width: dimension, height: dimension)
     }
     
-    func searchByLatLon() {
-        print("searchByLatLon()")
-        FlickrClient.sharedInstance.getImages { (photos, error) in
-            print("FlickrClient.sharedInstance.getImages")
-            if let photos = photos {
-                print("if let photos = photos")
-                
-                for photo in photos {
-                    // if an image exists at the url, set the image and title
-                    let imageURL = URL(string: photo["url_m"] as! String)
-                    
-                    if let imageData = try? Data(contentsOf: imageURL!) {
-                        let image = UIImage(data: imageData)
-                        performUIUpdatesOnMain {
-                            self.photos.append(image!)
-                            self.collectionView.reloadData()
-                        }
-                    }
-                    //                    print("IMAGES: \(photos)")
-                }
-            } else {
-                print("else")
-                print(error ?? "empty error")
-            }
-        }
-    }
 }
 
 extension PhotoAlbumViewController: MKMapViewDelegate {
@@ -106,20 +78,14 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
     }
 }
 
-extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+extension PhotoAlbumViewController {
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return 3
-//        return photos.count
     }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
-//        let photo = self.photos[(indexPath as NSIndexPath).row]
-//        print("photo: \(photo)")
-//
-//        // Set the name and image
-//        cell.imageView.image = photo
-        
+
         return cell
     }
     
