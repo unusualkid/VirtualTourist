@@ -136,8 +136,7 @@
                         <viewLayoutGuide key="safeArea" id="aHj-ze-BhX"/>
                     </view>
                     <connections>
-                        <outlet property="collectionView" destination="eP8-MM-L3F" id="8Oo-pF-w9j"/>
-                        <outlet property="mapView" destination="0SM-Tk-yq9" id="mUH-w0-1Fv"/>
+                        <outlet property="mapView" destination="0SM-Tk-yq9" id="btC-fN-pN6"/>
                         <outlet property="toolButton" destination="NEg-CU-4Sb" id="cBR-5J-4KJ"/>
                     </connections>
                 </viewController>

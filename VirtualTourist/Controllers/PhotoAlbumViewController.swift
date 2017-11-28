@@ -9,12 +9,10 @@
 import UIKit
 import MapKit
 
-class PhotoAlbumViewController: CoreDataCollectionViewController {
+class PhotoAlbumViewController: UIViewController {
     
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var toolButton: UIBarButtonItem!
-//    @IBOutlet weak var collectionView: UICollectionView!
-//    @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
@@ -22,6 +20,26 @@ class PhotoAlbumViewController: CoreDataCollectionViewController {
 //        self.searchByLatLon()
         title = "Virtual Tourist"
         navigationItem.backBarButtonItem?.title = "Back"
+        
+        mapView.isZoomEnabled = false
+        mapView.isScrollEnabled = false
+        
+        // The lat and long are used to create a CLLocationCoordinates2D instance.
+        let coordinate = CLLocationCoordinate2D(latitude: FlickrClient.sharedInstance.latitude, longitude: FlickrClient.sharedInstance.longitude)
+        
+        mapView.centerCoordinate = coordinate
+        
+        // Here we create the annotation and set its coordiate, title, and subtitle properties
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = coordinate
+        //        mapView.centerCoordinate = coordinate
+        let region = MKCoordinateRegionMakeWithDistance(coordinate, 10000, 10000)
+        mapView.setRegion(region, animated: true)
+        
+        mapView.addAnnotation(annotation)
+        
+        print("mapView.centerCoordinate.latitude: \(mapView.centerCoordinate.latitude)")
+        print("mapView.centerCoordinate.latitude: \(mapView.centerCoordinate.longitude)")
     }
     
     override func viewDidLoad() {
@@ -53,43 +71,27 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
         return pinView
     }
     
+    func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
+        print("mapViewDidFinishLoadingMap")
+    }
+    
+    
+    
     func mapViewWillStartRenderingMap(_ mapView: MKMapView) {
         print("mapViewWillStartRenderingMap")
-        
-        mapView.isZoomEnabled = false
-        mapView.isScrollEnabled = false
-        
-        // The lat and long are used to create a CLLocationCoordinates2D instance.
-        let coordinate = CLLocationCoordinate2D(latitude: FlickrClient.sharedInstance.latitude, longitude: FlickrClient.sharedInstance.longitude)
-        
-        mapView.centerCoordinate = coordinate
-
-        // Here we create the annotation and set its coordiate, title, and subtitle properties
-        let annotation = MKPointAnnotation()
-        annotation.coordinate = coordinate
-        //        mapView.centerCoordinate = coordinate
-        let region = MKCoordinateRegionMakeWithDistance(coordinate, 10000, 10000)
-        mapView.setRegion(region, animated: true)
-        
-        mapView.addAnnotation(annotation)
-        
-        print("mapView.centerCoordinate.latitude: \(mapView.centerCoordinate.latitude)")
-        print("mapView.centerCoordinate.latitude: \(mapView.centerCoordinate.longitude)")
     }
 }
 
-extension PhotoAlbumViewController {
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return 3
     }
 
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
 
         return cell
     }
-    
-    
 
 }
 
