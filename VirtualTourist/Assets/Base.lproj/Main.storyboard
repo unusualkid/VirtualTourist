@@ -83,7 +83,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="117" height="106"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="qVb-Re-uIg">
+                                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="qVb-Re-uIg">
                                                     <rect key="frame" x="48" y="43" width="20" height="20"/>
                                                 </activityIndicatorView>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="543-zD-Ohp">
@@ -136,6 +136,8 @@
                         <viewLayoutGuide key="safeArea" id="aHj-ze-BhX"/>
                     </view>
                     <connections>
+                        <outlet property="collectionView" destination="eP8-MM-L3F" id="pGC-Cv-EwN"/>
+                        <outlet property="flowLayout" destination="7Gf-oN-7tV" id="dgF-aY-j5q"/>
                         <outlet property="mapView" destination="0SM-Tk-yq9" id="btC-fN-pN6"/>
                         <outlet property="toolButton" destination="NEg-CU-4Sb" id="cBR-5J-4KJ"/>
                     </connections>

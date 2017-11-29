@@ -13,11 +13,12 @@ class PhotoAlbumViewController: UIViewController {
     
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var toolButton: UIBarButtonItem!
+    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
         
-//        self.searchByLatLon()
         title = "Virtual Tourist"
         navigationItem.backBarButtonItem?.title = "Back"
         
@@ -32,27 +33,36 @@ class PhotoAlbumViewController: UIViewController {
         // Here we create the annotation and set its coordiate, title, and subtitle properties
         let annotation = MKPointAnnotation()
         annotation.coordinate = coordinate
-        //        mapView.centerCoordinate = coordinate
+        
         let region = MKCoordinateRegionMakeWithDistance(coordinate, 10000, 10000)
         mapView.setRegion(region, animated: true)
         
         mapView.addAnnotation(annotation)
         
-        print("mapView.centerCoordinate.latitude: \(mapView.centerCoordinate.latitude)")
-        print("mapView.centerCoordinate.latitude: \(mapView.centerCoordinate.longitude)")
+        performUIUpdatesOnMain {
+            self.setUpCollectionCellSize()
+        }
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-//        let space:CGFloat = 1.0
-//        let dimension = (collectionView.bounds.size.width - (2 * space)) / 3.0
-//        flowLayout.minimumInteritemSpacing = space
-//        flowLayout.minimumLineSpacing = space
-//        flowLayout.estimatedItemSize = UICollectionViewFlowLayoutAutomaticSize
-//        flowLayout.estimatedItemSize = CGSize(width: dimension, height: dimension)
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        performUIUpdatesOnMain {
+            self.setUpCollectionCellSize()
+        }
     }
-    
+}
+
+
+// Utility functions
+extension PhotoAlbumViewController {
+    // Set up cell size to auto adjust based on the device's width
+    func setUpCollectionCellSize() {
+        let space:CGFloat = 1.0
+        let dimension = (collectionView.bounds.size.width - (2 * space)) / 3.0
+        flowLayout.minimumInteritemSpacing = space
+        flowLayout.minimumLineSpacing = space
+        flowLayout.itemSize = CGSize(width: dimension, height: dimension)
+    }
 }
 
 extension PhotoAlbumViewController: MKMapViewDelegate {
@@ -83,16 +93,19 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 }
 
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 3
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: collectionView.bounds.size.width / 4, height: 350)
     }
-
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 4
+    }
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
-
+        
         return cell
     }
-
 }
 
 
