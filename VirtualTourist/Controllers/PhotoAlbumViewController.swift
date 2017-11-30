@@ -30,9 +30,9 @@ class PhotoAlbumViewController: UIViewController {
     }
     // MARK: Init
     
-    //    init(collectionView: UICollectionView) {
-    //        self.collectionView = collectionView
-    //    }
+//        init(collectionView: UICollectionView) {
+//            self.collectionView = collectionView
+//        }
     
 //    // Do not worry about this initializer. It has to be implemented
 //    // because of the way Swift interfaces with an Objective C
@@ -41,7 +41,7 @@ class PhotoAlbumViewController: UIViewController {
 //        super.init(coder: aDecoder)
 //        fatalError("init(coder:) has not been implemented")
 //    }
-//    
+//
     // MARK: Deinit
     
     deinit {
@@ -141,19 +141,21 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
     //    }
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        if let fc = fetchedResultsController {
-            return (fc.sections?.count)!
-        } else {
-            return 0
-        }
+//        if let fc = fetchedResultsController {
+//            return (fc.sections?.count)!
+//        } else {
+//            return 0
+//        }
+        return 1
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if let fc = fetchedResultsController {
-            return fc.sections![section].numberOfObjects
-        } else {
-            return 0
-        }
+//        if let fc = fetchedResultsController {
+//            return fc.sections![section].numberOfObjects
+//        } else {
+//            return 0
+//        }
+        return 12
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
