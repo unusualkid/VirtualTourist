@@ -24,6 +24,16 @@ class MapViewController: UIViewController {
         let delegate = UIApplication.shared.delegate as! AppDelegate
         let stack = delegate.stack
         
+        // Connect long press gesture to mapView
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPress(gestureRecognizer:)))
+        mapView.addGestureRecognizer(longPressGesture)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        
+        mapView.removeAnnotations(mapView.annotations)
+        
         if let pins = fetchAnnotationsFromCoreData() {
             for pin in pins {
                 let annotation = MKPointAnnotation()
@@ -32,10 +42,6 @@ class MapViewController: UIViewController {
                 mapView.addAnnotation(annotation)
             }
         }
-        
-        // Connect long press gesture to mapView
-        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPress(gestureRecognizer:)))
-        mapView.addGestureRecognizer(longPressGesture)
     }
 
     // TODO: Add delete pin function

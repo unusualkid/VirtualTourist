@@ -49,8 +49,8 @@ class PhotoAlbumViewController: UIViewController {
         blockOperations.removeAll(keepingCapacity: false)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(true)
+    override func viewDidLoad() {
+        super.viewDidLoad()
         
         title = "Virtual Tourist"
         navigationItem.backBarButtonItem?.title = "Back"
@@ -71,6 +71,10 @@ class PhotoAlbumViewController: UIViewController {
         mapView.setRegion(region, animated: true)
         
         mapView.addAnnotation(annotation)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
         
         performUIUpdatesOnMain {
             self.setUpCollectionCellSize()
