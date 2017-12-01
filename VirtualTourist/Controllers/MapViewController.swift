@@ -13,16 +13,17 @@ import CoreData
 class MapViewController: UIViewController {
     
     @IBOutlet weak var mapView: MKMapView!
+    @IBOutlet weak var deletePinLabel: UILabel!
+    
+    let delegate = UIApplication.shared.delegate as! AppDelegate
     
     // The point annotations will be stored in this array, and then provided to the map view.
     var annotations = [MKPointAnnotation]()
     
+    var deletePinEnabled = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Get the stack
-        let delegate = UIApplication.shared.delegate as! AppDelegate
-        let stack = delegate.stack
         
         // Connect long press gesture to mapView
         let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPress(gestureRecognizer:)))
@@ -47,7 +48,17 @@ class MapViewController: UIViewController {
     // TODO: Add delete pin function
     @IBAction func editButtonPressed(_ sender: Any) {
         print("Edit Button pressed")
-        
+
+        if view.frame.origin.y == 0 {
+            view.frame.origin.y = -50
+            deletePinLabel.isHidden = false
+            deletePinEnabled = true
+        } else {
+            view.frame.origin.y = 0
+            deletePinLabel.isHidden = true
+            deletePinEnabled = false
+        }
+
     }
     
     // Drop and add pin when long press gesture detected
@@ -56,13 +67,11 @@ class MapViewController: UIViewController {
             let touchPoint = gestureRecognizer.location(in: mapView)
             let coordinates = mapView.convert(touchPoint, toCoordinateFrom: mapView)
             let annotation = MKPointAnnotation()
-            
-            let delegate = UIApplication.shared.delegate as! AppDelegate
+
             let pin = Pin(lat: coordinates.latitude, lon: coordinates.longitude, context: delegate.stack.context)
             
             annotation.coordinate = coordinates
             mapView.addAnnotation(annotation)
-            
             
             if (pin.photos?.count)! == 0 {
                 FlickrClient.sharedInstance.getImages { (photos, error) in
@@ -71,7 +80,7 @@ class MapViewController: UIViewController {
                         for photo in photos {
                             print("photo: \(photo)")
                             let url = URL(string: photo["url_m"] as! String)
-                            let newPhoto = Photo(url: String(describing: url), context: delegate.stack.context)
+                            let newPhoto = Photo(url: String(describing: url), context: self.delegate.stack.context)
 
                             newPhoto.pin = pin
                             print("newPhoto: \(newPhoto)")
@@ -89,7 +98,6 @@ class MapViewController: UIViewController {
 extension MapViewController {
     func fetchAnnotationsFromCoreData() -> [Pin]? {
         do {
-            let delegate = UIApplication.shared.delegate as! AppDelegate
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
             let results = try delegate.stack.backgroundContext.fetch(fetchRequest) as! [Pin]
             print("results: \(results)")
@@ -128,11 +136,19 @@ extension MapViewController: MKMapViewDelegate {
     
     // Segue to the PhotoAlbumView when a pin/annotation is clicked
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        let controller = self.storyboard!.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
-        FlickrClient.sharedInstance.latitude = (view.annotation?.coordinate.latitude)!
-        FlickrClient.sharedInstance.longitude = (view.annotation?.coordinate.longitude)!
-
-        self.navigationController!.pushViewController(controller, animated: true)
+        if !deletePinEnabled {
+            let controller = self.storyboard!.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
+            FlickrClient.sharedInstance.latitude = (view.annotation?.coordinate.latitude)!
+            FlickrClient.sharedInstance.longitude = (view.annotation?.coordinate.longitude)!
+            
+            self.navigationController!.pushViewController(controller, animated: true)
+        } else {
+            
+            mapView.removeAnnotation(view.annotation!)
+            
+//            let pin = Pin(lat: coordinates.latitude, lon: coordinates.longitude, context: delegate.stack.context)
+        }
+        
     }
     
     func mapViewWillStartRenderingMap(_ mapView: MKMapView) {
