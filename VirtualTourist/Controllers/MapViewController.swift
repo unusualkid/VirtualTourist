@@ -22,12 +22,30 @@ class MapViewController: UIViewController {
     
     var deletePinEnabled = false
     
+    var fetchedResultsController : NSFetchedResultsController<NSFetchRequestResult>? {
+        didSet {
+            // Whenever the frc changes, we execute the search and
+            // reload the table
+            fetchedResultsController?.delegate = self
+            executeSearch()
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Connect long press gesture to mapView
         let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPress(gestureRecognizer:)))
         mapView.addGestureRecognizer(longPressGesture)
+        
+        // Create a fetchrequest
+        let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
+        
+        fr.sortDescriptors = [NSSortDescriptor(key: "lat", ascending: true),
+                              NSSortDescriptor(key: "lon", ascending: true)]
+        
+        // Create the FetchedResultsController
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: delegate.stack.context, sectionNameKeyPath: nil, cacheName: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -45,10 +63,7 @@ class MapViewController: UIViewController {
         }
     }
 
-    // TODO: Add delete pin function
     @IBAction func editButtonPressed(_ sender: Any) {
-        print("Edit Button pressed")
-
         if view.frame.origin.y == 0 {
             view.frame.origin.y = -50
             deletePinLabel.isHidden = false
@@ -95,7 +110,18 @@ class MapViewController: UIViewController {
 }
 
 // CoreData functions
-extension MapViewController {
+extension MapViewController: NSFetchedResultsControllerDelegate {
+    
+    func executeSearch() {
+        if let fc = fetchedResultsController {
+            do {
+                try fc.performFetch()
+            } catch let e as NSError {
+                print("Error while trying to perform a search: \n\(e)\n\(fetchedResultsController)")
+            }
+        }
+    }
+    
     func fetchAnnotationsFromCoreData() -> [Pin]? {
         do {
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
@@ -134,7 +160,7 @@ extension MapViewController: MKMapViewDelegate {
         return pinView
     }
     
-    // Segue to the PhotoAlbumView when a pin/annotation is clicked
+    // Segue to the PhotoAlbumView when a pin is clicked or if the edit mode is on, delete the pin
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         if !deletePinEnabled {
             let controller = self.storyboard!.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
@@ -144,9 +170,31 @@ extension MapViewController: MKMapViewDelegate {
             self.navigationController!.pushViewController(controller, animated: true)
         } else {
             
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
+//            let collectionArray = [(view.annotation?.coordinate.latitude)!, (view.annotation?.coordinate.longitude)!]
+//            print("collectionArray: \(collectionArray)")
+            
+            let predicateLat = NSPredicate(format: "lat = %@", argumentArray: [(view.annotation?.coordinate.latitude)!])
+            let predicateLon = NSPredicate(format: "lon = %@", argumentArray: [(view.annotation?.coordinate.longitude)!])
+            let predicateLatLon = NSCompoundPredicate(andPredicateWithSubpredicates: [predicateLat, predicateLon])
+            print("predicate: \(predicateLatLon)")
+            fetchRequest.predicate = predicateLatLon
+            
+            //TODO: this line crashes
+            if let pin = try? delegate.stack.backgroundContext.fetch(fetchRequest) as! Pin {
+                print("pin: \(pin)")
+                delegate.stack.backgroundContext.delete(pin)
+            }
             mapView.removeAnnotation(view.annotation!)
             
-//            let pin = Pin(lat: coordinates.latitude, lon: coordinates.longitude, context: delegate.stack.context)
+//            if let pins = fetchAnnotationsFromCoreData() {
+//                for pin in pins {
+//                    if pin.lat == view.annotation?.coordinate.latitude, pin.lon == view.annotation?.coordinate.longitude {
+//                        fetchedResultsController?.fetchedObjects.
+//                    }
+//                }
+//            }
+
         }
         
     }
