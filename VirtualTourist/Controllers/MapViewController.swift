@@ -62,7 +62,7 @@ class MapViewController: UIViewController {
             }
         }
     }
-
+    
     @IBAction func editButtonPressed(_ sender: Any) {
         if view.frame.origin.y == 0 {
             view.frame.origin.y = -50
@@ -73,7 +73,7 @@ class MapViewController: UIViewController {
             deletePinLabel.isHidden = true
             deletePinEnabled = false
         }
-
+        
     }
     
     // Drop and add pin when long press gesture detected
@@ -82,7 +82,7 @@ class MapViewController: UIViewController {
             let touchPoint = gestureRecognizer.location(in: mapView)
             let coordinates = mapView.convert(touchPoint, toCoordinateFrom: mapView)
             let annotation = MKPointAnnotation()
-
+            
             let pin = Pin(lat: coordinates.latitude, lon: coordinates.longitude, context: delegate.stack.context)
             
             annotation.coordinate = coordinates
@@ -96,7 +96,7 @@ class MapViewController: UIViewController {
                             print("photo: \(photo)")
                             let url = URL(string: photo["url_m"] as! String)
                             let newPhoto = Photo(url: String(describing: url), context: self.delegate.stack.context)
-
+                            
                             newPhoto.pin = pin
                             print("newPhoto: \(newPhoto)")
                         }
@@ -171,30 +171,20 @@ extension MapViewController: MKMapViewDelegate {
         } else {
             
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
-//            let collectionArray = [(view.annotation?.coordinate.latitude)!, (view.annotation?.coordinate.longitude)!]
-//            print("collectionArray: \(collectionArray)")
             
             let predicateLat = NSPredicate(format: "lat = %@", argumentArray: [(view.annotation?.coordinate.latitude)!])
             let predicateLon = NSPredicate(format: "lon = %@", argumentArray: [(view.annotation?.coordinate.longitude)!])
             let predicateLatLon = NSCompoundPredicate(andPredicateWithSubpredicates: [predicateLat, predicateLon])
-            print("predicate: \(predicateLatLon)")
             fetchRequest.predicate = predicateLatLon
             
-            //TODO: this line crashes
-            if let pin = try? delegate.stack.backgroundContext.fetch(fetchRequest) as! Pin {
-                print("pin: \(pin)")
-                delegate.stack.backgroundContext.delete(pin)
+            if let pins = try? delegate.stack.backgroundContext.fetch(fetchRequest) {
+                print("pins: \(pins)")
+                for pin in pins {
+                    delegate.stack.backgroundContext.delete(pin as! NSManagedObject)
+                }
             }
-            mapView.removeAnnotation(view.annotation!)
-            
-//            if let pins = fetchAnnotationsFromCoreData() {
-//                for pin in pins {
-//                    if pin.lat == view.annotation?.coordinate.latitude, pin.lon == view.annotation?.coordinate.longitude {
-//                        fetchedResultsController?.fetchedObjects.
-//                    }
-//                }
-//            }
 
+            mapView.removeAnnotation(view.annotation!)
         }
         
     }
