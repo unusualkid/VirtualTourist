@@ -17,7 +17,6 @@
 		3C53950A1FA826A000ECC3E3 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5395091FA826A000ECC3E3 /* Constants.swift */; };
 		3C53950F1FA8769A00ECC3E3 /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3C53950D1FA8769A00ECC3E3 /* Model.xcdatamodeld */; };
 		3C5395111FA884DF00ECC3E3 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5395101FA884DF00ECC3E3 /* CoreDataStack.swift */; };
-		3C53951B1FA98A6D00ECC3E3 /* CoreDataCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C53951A1FA98A6D00ECC3E3 /* CoreDataCollectionViewController.swift */; };
 		3C67EE601FA4478A00594285 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C67EE5F1FA4478A00594285 /* AppDelegate.swift */; };
 		3C67EE651FA4478A00594285 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3C67EE631FA4478A00594285 /* Main.storyboard */; };
 		3C67EE671FA4478A00594285 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3C67EE661FA4478A00594285 /* Assets.xcassets */; };
@@ -37,7 +36,6 @@
 		3C5395091FA826A000ECC3E3 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		3C53950E1FA8769A00ECC3E3 /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
 		3C5395101FA884DF00ECC3E3 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
-		3C53951A1FA98A6D00ECC3E3 /* CoreDataCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataCollectionViewController.swift; sourceTree = "<group>"; };
 		3C67EE5C1FA4478A00594285 /* VirtualTourist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VirtualTourist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3C67EE5F1FA4478A00594285 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3C67EE641FA4478A00594285 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -123,7 +121,6 @@
 			isa = PBXGroup;
 			children = (
 				3C67EE771FA7227A00594285 /* MapViewController.swift */,
-				3C53951A1FA98A6D00ECC3E3 /* CoreDataCollectionViewController.swift */,
 				3C67EE791FA722D000594285 /* PhotoAlbumViewController.swift */,
 				3C5354161FBED2A6007598BF /* PhotoAlbumViewCell.swift */,
 			);
@@ -223,7 +220,6 @@
 				3C414E7B1FC67B94006D813E /* Photo+CoreDataClass.swift in Sources */,
 				3C414E7E1FC67B94006D813E /* Pin+CoreDataProperties.swift in Sources */,
 				3C67EE781FA7227A00594285 /* MapViewController.swift in Sources */,
-				3C53951B1FA98A6D00ECC3E3 /* CoreDataCollectionViewController.swift in Sources */,
 				3C67EE601FA4478A00594285 /* AppDelegate.swift in Sources */,
 				3C414E7D1FC67B94006D813E /* Pin+CoreDataClass.swift in Sources */,
 				3C53950F1FA8769A00ECC3E3 /* Model.xcdatamodeld in Sources */,

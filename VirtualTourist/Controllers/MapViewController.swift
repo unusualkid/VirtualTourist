@@ -137,9 +137,47 @@ extension MapViewController: NSFetchedResultsControllerDelegate {
     }
 }
 
+// Segue preparation
 extension MapViewController {
-    func searchImageLatLon(pin: Pin) {
+      override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        //Notice that this code works for both Scissors and Paper
+        let controller = segue.destination as! PhotoAlbumViewController
         
+        if segue.identifier! == "displayPinPhotos" {
+            print("""
+                if segue.identifier! == "displayPinPhotos"
+                """)
+//            if let notesVC = segue.destination as? NotesViewController {
+//
+//                // Create Fetch Request
+//                let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Note")
+//
+//                fr.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false),NSSortDescriptor(key: "text", ascending: true)]
+//
+//                // So far we have a search that will match ALL notes. However, we're
+//                // only interested in those within the current notebook:
+//                // NSPredicate to the rescue!
+//                let indexPath = tableView.indexPathForSelectedRow!
+//                let notebook = fetchedResultsController?.object(at: indexPath) as? Notebook
+//
+//                print("[notebook!]: \([notebook!])")
+//
+//                let pred = NSPredicate(format: "notebook = %@", argumentArray: [notebook!])
+//
+//                print("pred: \(pred)")
+//
+//                fr.predicate = pred
+//
+//                // Create FetchedResultsController
+//                let fc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext:fetchedResultsController!.managedObjectContext, sectionNameKeyPath: "humanReadableAge", cacheName: nil)
+//
+//                // Inject it into the notesVC
+//                notesVC.fetchedResultsController = fc
+//
+//                // Inject the notebook too!
+//                notesVC.notebook = notebook
+//            }
+        }
     }
 }
 
@@ -164,11 +202,13 @@ extension MapViewController: MKMapViewDelegate {
     // Segue to the PhotoAlbumView when a pin is clicked or if the edit mode is on, delete the pin
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         if !deletePinEnabled {
-            let controller = self.storyboard!.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
             FlickrClient.sharedInstance.latitude = (view.annotation?.coordinate.latitude)!
             FlickrClient.sharedInstance.longitude = (view.annotation?.coordinate.longitude)!
+            performSegue(withIdentifier: "displayPinPhotos", sender: self)
             
-            self.navigationController!.pushViewController(controller, animated: true)
+//            let controller = self.storyboard!.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
+//            // Storyboard getting stuck here
+//            self.navigationController!.pushViewController(controller, animated: true)
         } else {
             
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")

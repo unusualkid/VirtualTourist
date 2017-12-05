@@ -30,7 +30,7 @@ class PhotoAlbumViewController: UIViewController {
             collectionView?.reloadData()
         }
     }
-
+    
     // Do not worry about this initializer. It has to be implemented
     // because of the way Swift interfaces with an Objective C
     // protocol called NSArchiving. It's not relevant.
@@ -68,15 +68,6 @@ class PhotoAlbumViewController: UIViewController {
         
         mapView.addAnnotation(annotation)
         
-        // Get the stack
-        let stack = delegate.stack
-        
-        // Create a fetchrequest
-        let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
-        fr.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
-        
-        // Create the FetchedResultsController
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: stack.context, sectionNameKeyPath: nil, cacheName: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -138,6 +129,16 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        // Get the stack
+        let stack = delegate.stack
+        
+        // Create a fetchrequest
+        let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
+        fr.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
+        
+        // Create the FetchedResultsController
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: stack.context, sectionNameKeyPath: nil, cacheName: nil)
+        
         if let fc = fetchedResultsController {
             return fc.sections![section].numberOfObjects
         } else {
@@ -164,7 +165,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
                 cell.imageView.image = UIImage(data: imageData)
             }
         }
-    
+        
         return cell
     }
 }

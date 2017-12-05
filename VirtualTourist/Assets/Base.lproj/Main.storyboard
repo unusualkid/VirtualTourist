@@ -55,6 +55,7 @@
                     <connections>
                         <outlet property="deletePinLabel" destination="CII-xa-SnM" id="9jX-uK-aBX"/>
                         <outlet property="mapView" destination="hbh-cE-ENm" id="G8o-jj-Ayx"/>
+                        <segue destination="M1r-oG-5rw" kind="show" identifier="displayPinPhotos" id="GPt-MO-Nbh"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -70,7 +71,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" zoomEnabled="NO" scrollEnabled="NO" rotateEnabled="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0SM-Tk-yq9">
-                                <rect key="frame" x="0.0" y="44" width="375" height="177"/>
+                                <rect key="frame" x="0.0" y="88" width="375" height="177"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="177" id="uug-K1-biQ"/>
                                 </constraints>
@@ -79,7 +80,7 @@
                                 </connections>
                             </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="eP8-MM-L3F">
-                                <rect key="frame" x="0.0" y="221" width="375" height="508"/>
+                                <rect key="frame" x="0.0" y="265" width="375" height="464"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="7Gf-oN-7tV">
                                     <size key="itemSize" width="117" height="106"/>
