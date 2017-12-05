@@ -95,7 +95,8 @@ class MapViewController: UIViewController {
                         for photo in photos {
                             print("photo: \(photo)")
                             let url = URL(string: photo["url_m"] as! String)
-                            let newPhoto = Photo(url: String(describing: url), context: self.delegate.stack.context)
+                            
+                            let newPhoto = Photo(url: String(describing: url!), context: self.delegate.stack.context)
                             
                             newPhoto.pin = pin
                             print("newPhoto: \(newPhoto)")

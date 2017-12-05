@@ -19,6 +19,8 @@ class PhotoAlbumViewController: UIViewController {
     
     // blockOperations for Coredata
     var blockOperations: [BlockOperation] = []
+    let delegate = UIApplication.shared.delegate as! AppDelegate
+    
     var fetchedResultsController : NSFetchedResultsController<NSFetchRequestResult>? {
         didSet {
             // Whenever the frc changes, we execute the search and
@@ -28,20 +30,14 @@ class PhotoAlbumViewController: UIViewController {
             collectionView?.reloadData()
         }
     }
-    // MARK: Init
+
+    // Do not worry about this initializer. It has to be implemented
+    // because of the way Swift interfaces with an Objective C
+    // protocol called NSArchiving. It's not relevant.
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
     
-//        init(collectionView: UICollectionView) {
-//            self.collectionView = collectionView
-//        }
-    
-//    // Do not worry about this initializer. It has to be implemented
-//    // because of the way Swift interfaces with an Objective C
-//    // protocol called NSArchiving. It's not relevant.
-//    required init?(coder aDecoder: NSCoder) {
-//        super.init(coder: aDecoder)
-//        fatalError("init(coder:) has not been implemented")
-//    }
-//
     // MARK: Deinit
     
     deinit {
@@ -71,6 +67,16 @@ class PhotoAlbumViewController: UIViewController {
         mapView.setRegion(region, animated: true)
         
         mapView.addAnnotation(annotation)
+        
+        // Get the stack
+        let stack = delegate.stack
+        
+        // Create a fetchrequest
+        let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
+        fr.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
+        
+        // Create the FetchedResultsController
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: stack.context, sectionNameKeyPath: nil, cacheName: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -101,15 +107,6 @@ extension PhotoAlbumViewController {
         flowLayout.itemSize = CGSize(width: dimension, height: dimension)
     }
     
-    func executeSearch() {
-        if let fc = fetchedResultsController {
-            do {
-                try fc.performFetch()
-            } catch let e as NSError {
-                print("Error while trying to perform a search: \n\(e)\n\(fetchedResultsController)")
-            }
-        }
-    }
 }
 
 extension PhotoAlbumViewController: MKMapViewDelegate {
@@ -140,38 +137,62 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 }
 
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
-    //    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-    //        return CGSize(width: collectionView.bounds.size.width / 4, height: 350)
-    //    }
-    
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-//        if let fc = fetchedResultsController {
-//            return (fc.sections?.count)!
-//        } else {
-//            return 0
-//        }
-        return 1
-    }
-    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-//        if let fc = fetchedResultsController {
-//            return fc.sections![section].numberOfObjects
-//        } else {
-//            return 0
-//        }
-        return 12
+        if let fc = fetchedResultsController {
+            return fc.sections![section].numberOfObjects
+        } else {
+            return 0
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        let photo = fetchedResultsController?.object(at: indexPath) as! Photo
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
         
+        var imageURL: URL!
+        print("photo.url: \(photo.url)")
+        if let url = photo.url {
+            print("url: \(url)")
+            imageURL = URL(string: url)
+        }
+        
+        print("imageUrl: \(imageURL)")
+        if let imageData = try? Data(contentsOf: imageURL!) {
+            print("imageURL!: \(imageURL!)")
+            performUIUpdatesOnMain {
+                cell.imageView.image = UIImage(data: imageData)
+            }
+        }
+    
         return cell
     }
 }
 
 extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     
-    // MARK: NSFetchedResultsControllerDelegate
+    func executeSearch() {
+        if let fc = fetchedResultsController {
+            do {
+                try fc.performFetch()
+            } catch let e as NSError {
+                print("Error while trying to perform a search: \n\(e)\n\(fetchedResultsController)")
+            }
+        }
+    }
+    
+    func fetchPhotosFromCoreData() -> [Photo]? {
+        do {
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
+            let results = try delegate.stack.backgroundContext.fetch(fetchRequest) as! [Photo]
+            print("results: \(results)")
+            return results
+            
+        } catch let error as NSError {
+            print("Could not fetch \(error), \(error.userInfo)")
+        }
+        return nil
+    }
     
     func controllerWillChangeContent(controller: NSFetchedResultsController<NSFetchRequestResult>) {
         blockOperations.removeAll(keepingCapacity: false)
