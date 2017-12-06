@@ -3,7 +3,7 @@
 //  VirtualTourist
 //
 //  Created by Kenneth Chen on 10/30/17.
-//  Copyright ¬© 2017 Cotery. All rights reserved.
+//  Copyright Å© 2017 Cotery. All rights reserved.
 //
 
 import UIKit
@@ -41,6 +41,7 @@ class MapViewController: UIViewController {
         let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPress(gestureRecognizer:)))
         mapView.addGestureRecognizer(longPressGesture)
         
+        fetchedResultsController.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -49,14 +50,11 @@ class MapViewController: UIViewController {
         mapView.removeAnnotations(mapView.annotations)
         
         if let pins = fetchAnnotationsFromCoreData() {
-            
             for pin in pins {
                 let annotation = MKPointAnnotation()
                 annotation.coordinate.latitude = pin.lat
                 annotation.coordinate.longitude = pin.lon
-                performUIUpdatesOnMain {
-                    self.mapView.addAnnotation(annotation)
-                }
+                mapView.addAnnotation(annotation)
             }
         }
     }
@@ -99,7 +97,7 @@ class MapViewController: UIViewController {
                             newPhoto.pin = pin
                             print("newPhoto: \(newPhoto)")
                         }
-                        print("pin: \(pin)")
+                    print("pin: \(pin)")
                     } else {
                         print(error ?? "empty error")
                     }
@@ -193,7 +191,7 @@ extension MapViewController: MKMapViewDelegate {
             pinView!.animatesDrop = true
         }
         else {
-            pinView!.annotation = annotation
+OB            pinView!.annotation = annotation
         }
         return pinView
     }
@@ -260,4 +258,3 @@ extension MapViewController: MKMapViewDelegate {
         UserDefaults.standard.synchronize()
     }
 }
-
