@@ -15,21 +15,24 @@ class MapViewController: UIViewController {
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var deletePinLabel: UILabel!
     
-    let delegate = UIApplication.shared.delegate as! AppDelegate
-    
     // The point annotations will be stored in this array, and then provided to the map view.
     var annotations = [MKPointAnnotation]()
     
     var deletePinEnabled = false
     
-    var fetchedResultsController : NSFetchedResultsController<NSFetchRequestResult>? {
-        didSet {
-            // Whenever the frc changes, we execute the search and
-            // reload the table
-            fetchedResultsController?.delegate = self
-            executeSearch()
-        }
-    }
+    lazy var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult> = {
+        // Create a fetchrequest
+        let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
+        fr.sortDescriptors = [NSSortDescriptor(key: "lat", ascending: true),
+                              NSSortDescriptor(key: "lon", ascending: true)]
+        let delegate = UIApplication.shared.delegate as! AppDelegate
+        let context = delegate.stack.context
+        let frc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+        return frc
+    }()
+    
+    // The annotation index to be used for segue
+    var index = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,14 +41,7 @@ class MapViewController: UIViewController {
         let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPress(gestureRecognizer:)))
         mapView.addGestureRecognizer(longPressGesture)
         
-        // Create a fetchrequest
-        let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
-        
-        fr.sortDescriptors = [NSSortDescriptor(key: "lat", ascending: true),
-                              NSSortDescriptor(key: "lon", ascending: true)]
-        
-        // Create the FetchedResultsController
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: delegate.stack.context, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultsController.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -82,7 +78,7 @@ class MapViewController: UIViewController {
             let touchPoint = gestureRecognizer.location(in: mapView)
             let coordinates = mapView.convert(touchPoint, toCoordinateFrom: mapView)
             let annotation = MKPointAnnotation()
-            
+            let delegate = UIApplication.shared.delegate as! AppDelegate
             let pin = Pin(lat: coordinates.latitude, lon: coordinates.longitude, context: delegate.stack.context)
             
             annotation.coordinate = coordinates
@@ -90,17 +86,18 @@ class MapViewController: UIViewController {
             
             if (pin.photos?.count)! == 0 {
                 FlickrClient.sharedInstance.getImages { (photos, error) in
-                    print("FlickrClient.sharedInstance.getImages")
+                    print("pin: \(pin)")
                     if let photos = photos {
                         for photo in photos {
                             print("photo: \(photo)")
                             let url = URL(string: photo["url_m"] as! String)
                             
-                            let newPhoto = Photo(url: String(describing: url!), context: self.delegate.stack.context)
+                            let newPhoto = Photo(url: String(describing: url!), context: delegate.stack.context)
                             
                             newPhoto.pin = pin
                             print("newPhoto: \(newPhoto)")
                         }
+                    print("pin: \(pin)")
                     } else {
                         print(error ?? "empty error")
                     }
@@ -112,71 +109,71 @@ class MapViewController: UIViewController {
 
 // CoreData functions
 extension MapViewController: NSFetchedResultsControllerDelegate {
-    
-    func executeSearch() {
-        if let fc = fetchedResultsController {
-            do {
-                try fc.performFetch()
-            } catch let e as NSError {
-                print("Error while trying to perform a search: \n\(e)\n\(fetchedResultsController)")
-            }
-        }
-    }
-    
     func fetchAnnotationsFromCoreData() -> [Pin]? {
         do {
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
-            let results = try delegate.stack.backgroundContext.fetch(fetchRequest) as! [Pin]
-            print("results: \(results)")
-            return results
-            
-        } catch let error as NSError {
-            print("Could not fetch \(error), \(error.userInfo)")
+            try fetchedResultsController.performFetch()
+        } catch let e as NSError {
+            print("Error while trying to perform a search: \n\(e)\n\(fetchedResultsController)")
         }
-        return nil
+        let pins = fetchedResultsController.fetchedObjects as! [Pin]?
+        print("fetchAnnotationsFromCoreData()")
+        print("pins: \(pins)")
+        return pins
     }
 }
 
 // Segue preparation
 extension MapViewController {
-      override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        //Notice that this code works for both Scissors and Paper
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let controller = segue.destination as! PhotoAlbumViewController
         
         if segue.identifier! == "displayPinPhotos" {
             print("""
                 if segue.identifier! == "displayPinPhotos"
                 """)
-//            if let notesVC = segue.destination as? NotesViewController {
-//
-//                // Create Fetch Request
-//                let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Note")
-//
-//                fr.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false),NSSortDescriptor(key: "text", ascending: true)]
-//
-//                // So far we have a search that will match ALL notes. However, we're
-//                // only interested in those within the current notebook:
-//                // NSPredicate to the rescue!
-//                let indexPath = tableView.indexPathForSelectedRow!
-//                let notebook = fetchedResultsController?.object(at: indexPath) as? Notebook
-//
-//                print("[notebook!]: \([notebook!])")
-//
-//                let pred = NSPredicate(format: "notebook = %@", argumentArray: [notebook!])
-//
-//                print("pred: \(pred)")
-//
-//                fr.predicate = pred
-//
-//                // Create FetchedResultsController
-//                let fc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext:fetchedResultsController!.managedObjectContext, sectionNameKeyPath: "humanReadableAge", cacheName: nil)
-//
-//                // Inject it into the notesVC
-//                notesVC.fetchedResultsController = fc
-//
-//                // Inject the notebook too!
-//                notesVC.notebook = notebook
-//            }
+            if let photoVC = segue.destination as? PhotoAlbumViewController {
+                
+                //                // Create Fetch Request
+                //                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
+                //
+                //                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
+                //
+                ////                let indexPath = IndexPath(row: index, section: 0)
+                //
+                //                let pin = fetchedResultsController?.object(at: indexPath) as? Pin
+                
+                //                print("[pin!]: \([pin!])")
+                //
+                //
+                //                // Create Fetch Request
+                //                let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Note")
+                //
+                //                fr.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false),NSSortDescriptor(key: "text", ascending: true)]
+                //
+                //                // So far we have a search that will match ALL notes. However, we're
+                //                // only interested in those within the current notebook:
+                //                // NSPredicate to the rescue!
+                //                let indexPath = tableView.indexPathForSelectedRow!
+                //                let notebook = fetchedResultsController?.object(at: indexPath) as? Notebook
+                //
+                //                print("[notebook!]: \([notebook!])")
+                //
+                //                let pred = NSPredicate(format: "notebook = %@", argumentArray: [notebook!])
+                //
+                //                print("pred: \(pred)")
+                //
+                //                fr.predicate = pred
+                //
+                //                // Create FetchedResultsController
+                //                let fc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext:fetchedResultsController!.managedObjectContext, sectionNameKeyPath: "humanReadableAge", cacheName: nil)
+                //
+                //                // Inject it into the notesVC
+                //                notesVC.fetchedResultsController = fc
+                //
+                //                // Inject the notebook too!
+                //                notesVC.notebook = notebook
+                
+            }
         }
     }
 }
@@ -204,11 +201,14 @@ extension MapViewController: MKMapViewDelegate {
         if !deletePinEnabled {
             FlickrClient.sharedInstance.latitude = (view.annotation?.coordinate.latitude)!
             FlickrClient.sharedInstance.longitude = (view.annotation?.coordinate.longitude)!
+            
+            //            index = (mapView.annotations as NSArray).index(of: view.annotation!)
+            //            print ("Annotation Index = \(index)")
+            //
+            //            print(view.IndexPath)
+            
             performSegue(withIdentifier: "displayPinPhotos", sender: self)
             
-//            let controller = self.storyboard!.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
-//            // Storyboard getting stuck here
-//            self.navigationController!.pushViewController(controller, animated: true)
         } else {
             
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
@@ -218,13 +218,15 @@ extension MapViewController: MKMapViewDelegate {
             let predicateLatLon = NSCompoundPredicate(andPredicateWithSubpredicates: [predicateLat, predicateLon])
             fetchRequest.predicate = predicateLatLon
             
+            let delegate = UIApplication.shared.delegate as! AppDelegate
+            
             if let pins = try? delegate.stack.backgroundContext.fetch(fetchRequest) {
                 print("pins: \(pins)")
                 for pin in pins {
                     delegate.stack.backgroundContext.delete(pin as! NSManagedObject)
                 }
             }
-
+            
             mapView.removeAnnotation(view.annotation!)
         }
         

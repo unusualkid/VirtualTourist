@@ -130,14 +130,16 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // Get the stack
-        let stack = delegate.stack
+//        let stack = delegate.stack
         
         // Create a fetchrequest
         let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
         fr.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
         
-        // Create the FetchedResultsController
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: stack.context, sectionNameKeyPath: nil, cacheName: nil)
+//        // Create the FetchedResultsController
+//        let childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+//        let entity = NSEntityDescription.entityForName("Photo", inManagedObjectContext: childContext)
+//        fetchedResultsController = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: childContext, sectionNameKeyPath: nil, cacheName: nil)
         
         if let fc = fetchedResultsController {
             return fc.sections![section].numberOfObjects
@@ -152,15 +154,12 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
         
         var imageURL: URL!
-        print("photo.url: \(photo.url)")
+        
         if let url = photo.url {
-            print("url: \(url)")
             imageURL = URL(string: url)
         }
         
-        print("imageUrl: \(imageURL)")
         if let imageData = try? Data(contentsOf: imageURL!) {
-            print("imageURL!: \(imageURL!)")
             performUIUpdatesOnMain {
                 cell.imageView.image = UIImage(data: imageData)
             }
