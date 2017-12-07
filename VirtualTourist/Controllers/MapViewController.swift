@@ -31,9 +31,6 @@ class MapViewController: UIViewController {
         return frc
     }()
     
-    // The annotation index to be used for segue
-    var index = 0
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -49,14 +46,44 @@ class MapViewController: UIViewController {
         mapView.removeAnnotations(mapView.annotations)
         
         if let pins = fetchAnnotationsFromCoreData() {
-            
-            for pin in pins {
-                let annotation = MKPointAnnotation()
-                annotation.coordinate.latitude = pin.lat
-                annotation.coordinate.longitude = pin.lon
-                performUIUpdatesOnMain {
+            performUIUpdatesOnMain {
+                for pin in pins {
+                    let annotation = MKPointAnnotation()
+                    annotation.coordinate.latitude = pin.lat
+                    annotation.coordinate.longitude = pin.lon
                     self.mapView.addAnnotation(annotation)
                 }
+            }
+        }
+    }
+    
+    // Display alert with error message
+    private func displayAlert(errorString: String?) {
+        let controller = UIAlertController()
+        
+        if let errorString = errorString {
+            controller.message = errorString
+        }
+        
+        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { action in controller.dismiss(animated: true, completion: nil)
+        }
+        controller.addAction(okAction)
+        self.present(controller, animated: true, completion: nil)
+    }
+    
+    @IBAction func fetchButtonPressed(_ sender: Any) {
+        if let pins = fetchAnnotationsFromCoreData() {
+            performUIUpdatesOnMain {
+                for pin in pins {
+                    let annotation = MKPointAnnotation()
+                    annotation.coordinate.latitude = pin.lat
+                    annotation.coordinate.longitude = pin.lon
+                    self.mapView.addAnnotation(annotation)
+                }
+                self.displayAlert(errorString: """
+                    pins:
+                    \(pins)
+                    """)
             }
         }
     }
@@ -212,20 +239,17 @@ extension MapViewController: MKMapViewDelegate {
             performSegue(withIdentifier: "displayPinPhotos", sender: self)
             
         } else {
-            
+            let moc = fetchedResultsController.managedObjectContext
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
-            
             let predicateLat = NSPredicate(format: "lat = %@", argumentArray: [(view.annotation?.coordinate.latitude)!])
             let predicateLon = NSPredicate(format: "lon = %@", argumentArray: [(view.annotation?.coordinate.longitude)!])
             let predicateLatLon = NSCompoundPredicate(andPredicateWithSubpredicates: [predicateLat, predicateLon])
             fetchRequest.predicate = predicateLatLon
             
-            let delegate = UIApplication.shared.delegate as! AppDelegate
-            
-            if let pins = try? delegate.stack.backgroundContext.fetch(fetchRequest) {
+            if let pins = try? moc.fetch(fetchRequest) {
                 print("pins: \(pins)")
                 for pin in pins {
-                    delegate.stack.backgroundContext.delete(pin as! NSManagedObject)
+                    moc.delete(pin as! NSManagedObject)
                 }
             }
             
