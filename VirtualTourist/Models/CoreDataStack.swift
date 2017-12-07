@@ -12,7 +12,7 @@ import MapKit
 
 // MARK: - CoreDataStack
 
-struct CoreDataStack {
+class CoreDataStack {
     
     // MARK: Properties
     
@@ -154,7 +154,7 @@ extension CoreDataStack {
         
         if delayInSeconds > 0 {
             do {
-                try self.context.save()
+                save()
                 print("Autosaving")
                 let delegate = UIApplication.shared.delegate as! AppDelegate
                 let fetchRequestPin = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")

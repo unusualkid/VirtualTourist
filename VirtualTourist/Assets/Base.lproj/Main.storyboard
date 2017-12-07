@@ -6,6 +6,7 @@
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="Navigation items with more than one left or right bar item" minToolsVersion="7.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -46,11 +47,18 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <navigationItem key="navigationItem" title="Virtual Tourist" id="nnH-cv-ZTM">
-                        <barButtonItem key="rightBarButtonItem" title="Edit" id="npA-xK-15z">
-                            <connections>
-                                <action selector="editButtonPressed:" destination="BYZ-38-t0r" id="jov-KV-BIe"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem title="Edit" id="npA-xK-15z">
+                                <connections>
+                                    <action selector="editButtonPressed:" destination="BYZ-38-t0r" id="jov-KV-BIe"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem title="Fetch" id="BP7-xZ-M9r">
+                                <connections>
+                                    <action selector="fetchButtonPressed:" destination="BYZ-38-t0r" id="yDi-gb-La9"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
                         <outlet property="deletePinLabel" destination="CII-xa-SnM" id="9jX-uK-aBX"/>
