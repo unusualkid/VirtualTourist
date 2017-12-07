@@ -107,8 +107,9 @@ class MapViewController: UIViewController {
             let touchPoint = gestureRecognizer.location(in: mapView)
             let coordinates = mapView.convert(touchPoint, toCoordinateFrom: mapView)
             let annotation = MKPointAnnotation()
-            let delegate = UIApplication.shared.delegate as! AppDelegate
-            let pin = Pin(lat: coordinates.latitude, lon: coordinates.longitude, context: delegate.stack.context)
+//            let delegate = UIApplication.shared.delegate as! AppDelegate
+            let moc = fetchedResultsController.managedObjectContext
+            let pin = Pin(lat: coordinates.latitude, lon: coordinates.longitude, context: moc)
             
             annotation.coordinate = coordinates
             mapView.addAnnotation(annotation)
@@ -121,7 +122,7 @@ class MapViewController: UIViewController {
                             print("photo: \(photo)")
                             let url = URL(string: photo["url_m"] as! String)
                             
-                            let newPhoto = Photo(url: String(describing: url!), context: delegate.stack.context)
+                            let newPhoto = Photo(url: String(describing: url!), context: moc)
                             
                             newPhoto.pin = pin
                             print("newPhoto: \(newPhoto)")
