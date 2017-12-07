@@ -20,6 +20,8 @@ class MapViewController: UIViewController {
     
     var deletePinEnabled = false
     
+    var selectedPin = Pin()
+    
     lazy var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult> = {
         // Create a fetchrequest
         let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
@@ -46,11 +48,12 @@ class MapViewController: UIViewController {
         mapView.removeAnnotations(mapView.annotations)
         
         if let pins = fetchAnnotationsFromCoreData() {
-            performUIUpdatesOnMain {
-                for pin in pins {
-                    let annotation = MKPointAnnotation()
-                    annotation.coordinate.latitude = pin.lat
-                    annotation.coordinate.longitude = pin.lon
+            
+            for pin in pins {
+                let annotation = MKPointAnnotation()
+                annotation.coordinate.latitude = pin.lat
+                annotation.coordinate.longitude = pin.lon
+                performUIUpdatesOnMain {
                     self.mapView.addAnnotation(annotation)
                 }
             }
@@ -107,7 +110,7 @@ class MapViewController: UIViewController {
             let touchPoint = gestureRecognizer.location(in: mapView)
             let coordinates = mapView.convert(touchPoint, toCoordinateFrom: mapView)
             let annotation = MKPointAnnotation()
-//            let delegate = UIApplication.shared.delegate as! AppDelegate
+            //            let delegate = UIApplication.shared.delegate as! AppDelegate
             let moc = fetchedResultsController.managedObjectContext
             let pin = Pin(lat: coordinates.latitude, lon: coordinates.longitude, context: moc)
             
@@ -141,6 +144,7 @@ class MapViewController: UIViewController {
 extension MapViewController: NSFetchedResultsControllerDelegate {
     func fetchAnnotationsFromCoreData() -> [Pin]? {
         do {
+            fetchedResultsController.fetchRequest.predicate = nil
             try fetchedResultsController.performFetch()
         } catch let e as NSError {
             print("Error while trying to perform a search: \n\(e)\n\(fetchedResultsController)")
@@ -163,45 +167,20 @@ extension MapViewController {
                 """)
             if let photoVC = segue.destination as? PhotoAlbumViewController {
                 
-                //                // Create Fetch Request
-                //                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
-                //
-                //                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
-                //
-                ////                let indexPath = IndexPath(row: index, section: 0)
-                //
-                //                let pin = fetchedResultsController?.object(at: indexPath) as? Pin
+                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
+                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
                 
-                //                print("[pin!]: \([pin!])")
-                //
-                //
-                //                // Create Fetch Request
-                //                let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Note")
-                //
-                //                fr.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false),NSSortDescriptor(key: "text", ascending: true)]
-                //
-                //                // So far we have a search that will match ALL notes. However, we're
-                //                // only interested in those within the current notebook:
-                //                // NSPredicate to the rescue!
-                //                let indexPath = tableView.indexPathForSelectedRow!
-                //                let notebook = fetchedResultsController?.object(at: indexPath) as? Notebook
-                //
-                //                print("[notebook!]: \([notebook!])")
-                //
-                //                let pred = NSPredicate(format: "notebook = %@", argumentArray: [notebook!])
-                //
-                //                print("pred: \(pred)")
-                //
-                //                fr.predicate = pred
-                //
-                //                // Create FetchedResultsController
-                //                let fc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext:fetchedResultsController!.managedObjectContext, sectionNameKeyPath: "humanReadableAge", cacheName: nil)
-                //
-                //                // Inject it into the notesVC
-                //                notesVC.fetchedResultsController = fc
-                //
-                //                // Inject the notebook too!
-                //                notesVC.notebook = notebook
+                print("selectedPin: \(selectedPin)")
+                let predicate = NSPredicate(format: "pin = %@", argumentArray: [selectedPin])
+                print("predicate: \(predicate)")
+                fetchRequest.predicate = predicate
+                
+                let delegate = UIApplication.shared.delegate as! AppDelegate
+                
+                // Create FetchedResultsController
+                let fc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: delegate.stack.context, sectionNameKeyPath: nil, cacheName: nil)
+                
+                photoVC.fetchedResultsController = fc
                 
             }
         }
@@ -228,6 +207,15 @@ extension MapViewController: MKMapViewDelegate {
     
     // Segue to the PhotoAlbumView when a pin is clicked or if the edit mode is on, delete the pin
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        
+        // Get the clicked pin from CoreData
+        let moc = fetchedResultsController.managedObjectContext
+        let fetchRequest = fetchedResultsController.fetchRequest
+        let predicateLat = NSPredicate(format: "lat = %@", argumentArray: [(view.annotation?.coordinate.latitude)!])
+        let predicateLon = NSPredicate(format: "lon = %@", argumentArray: [(view.annotation?.coordinate.longitude)!])
+        let predicateLatLon = NSCompoundPredicate(andPredicateWithSubpredicates: [predicateLat, predicateLon])
+        fetchRequest.predicate = predicateLatLon
+        
         if !deletePinEnabled {
             FlickrClient.sharedInstance.latitude = (view.annotation?.coordinate.latitude)!
             FlickrClient.sharedInstance.longitude = (view.annotation?.coordinate.longitude)!
@@ -236,17 +224,16 @@ extension MapViewController: MKMapViewDelegate {
             //            print ("Annotation Index = \(index)")
             //
             //            print(view.IndexPath)
-            
+            if let pins = try? moc.fetch(fetchRequest) {
+                for pin in pins {
+                    selectedPin = pin as! Pin
+                    print("selectedPin: \(selectedPin)")
+                }
+            }
             performSegue(withIdentifier: "displayPinPhotos", sender: self)
             
-        } else {
-            let moc = fetchedResultsController.managedObjectContext
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
-            let predicateLat = NSPredicate(format: "lat = %@", argumentArray: [(view.annotation?.coordinate.latitude)!])
-            let predicateLon = NSPredicate(format: "lon = %@", argumentArray: [(view.annotation?.coordinate.longitude)!])
-            let predicateLatLon = NSCompoundPredicate(andPredicateWithSubpredicates: [predicateLat, predicateLon])
-            fetchRequest.predicate = predicateLatLon
             
+        } else {
             if let pins = try? moc.fetch(fetchRequest) {
                 print("pins: \(pins)")
                 for pin in pins {
