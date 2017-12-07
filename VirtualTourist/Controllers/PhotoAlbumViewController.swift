@@ -21,29 +21,16 @@ class PhotoAlbumViewController: UIViewController {
     var blockOperations: [BlockOperation] = []
     let delegate = UIApplication.shared.delegate as! AppDelegate
     
-    var fetchedResultsController : NSFetchedResultsController<NSFetchRequestResult>? {
-        didSet {
-            // Whenever the frc changes, we execute the search and
-            // reload the collection
-            fetchedResultsController?.delegate = self
-            executeSearch()
-            collectionView?.reloadData()
-        }
-    }
+    lazy var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult> = {
+        // Create a fetchrequest
+        let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
+        fr.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
+        let delegate = UIApplication.shared.delegate as! AppDelegate
+        let context = delegate.stack.context
+        let frc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+        return frc
+    }()
     
-    // Do not worry about this initializer. It has to be implemented
-    // because of the way Swift interfaces with an Objective C
-    // protocol called NSArchiving. It's not relevant.
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-    }
-    
-    // MARK: Deinit
-    
-    deinit {
-        blockOperations.forEach { $0.cancel() }
-        blockOperations.removeAll(keepingCapacity: false)
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,6 +40,7 @@ class PhotoAlbumViewController: UIViewController {
         
         mapView.isZoomEnabled = false
         mapView.isScrollEnabled = false
+        mapView.removeAnnotations(mapView.annotations)
         
         // The lat and long are used to create a CLLocationCoordinates2D instance.
         let coordinate = CLLocationCoordinate2D(latitude: FlickrClient.sharedInstance.latitude, longitude: FlickrClient.sharedInstance.longitude)
@@ -68,6 +56,7 @@ class PhotoAlbumViewController: UIViewController {
         
         mapView.addAnnotation(annotation)
         
+        executeSearch()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -129,16 +118,15 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if let fc = fetchedResultsController {
-            return fc.sections![section].numberOfObjects
-        } else {
-            return 0
-        }
+        
+        return 3
+        //            return fc.sections![section].numberOfObjects
+        
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        let photo = fetchedResultsController?.object(at: indexPath) as! Photo
+        let photo = fetchedResultsController.object(at: indexPath) as! Photo
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
         
         var imageURL: URL!
@@ -155,17 +143,29 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         
         return cell
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        var indexPaths = [IndexPath]()
+        indexPaths.append(indexPath)
+        print("indexPath: \(indexPath)")
+        print("indexPaths: \(indexPaths)")
+        
+        performUIUpdatesOnMain {
+            
+            collectionView.deleteItems(at: indexPaths)
+            collectionView.reloadData()
+        }
+        
+    }
 }
 
 extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     
     func executeSearch() {
-        if let fc = fetchedResultsController {
-            do {
-                try fc.performFetch()
-            } catch let e as NSError {
-                print("Error while trying to perform a search: \n\(e)\n\(fetchedResultsController)")
-            }
+        do {
+            try fetchedResultsController.performFetch()
+        } catch let e as NSError {
+            print("Error while trying to perform a search: \n\(e)\n\(fetchedResultsController)")
         }
     }
     

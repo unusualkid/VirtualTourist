@@ -105,10 +105,10 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="qVb-Re-uIg">
-                                                    <rect key="frame" x="48" y="65" width="20" height="20"/>
+                                                    <rect key="frame" x="48" y="43" width="20" height="20"/>
                                                 </activityIndicatorView>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="543-zD-Ohp">
-                                                    <rect key="frame" x="0.0" y="44" width="117" height="62"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="117" height="106"/>
                                                 </imageView>
                                             </subviews>
                                         </view>
@@ -116,10 +116,10 @@
                                         <constraints>
                                             <constraint firstItem="543-zD-Ohp" firstAttribute="leading" secondItem="Q5A-U0-7nC" secondAttribute="leadingMargin" constant="-8" id="FUI-sA-y99"/>
                                             <constraint firstItem="543-zD-Ohp" firstAttribute="bottom" secondItem="Q5A-U0-7nC" secondAttribute="bottomMargin" constant="8" id="HJB-gA-pMv"/>
+                                            <constraint firstItem="543-zD-Ohp" firstAttribute="top" secondItem="Q5A-U0-7nC" secondAttribute="top" id="MZw-p2-sEF"/>
                                             <constraint firstItem="543-zD-Ohp" firstAttribute="trailing" secondItem="Q5A-U0-7nC" secondAttribute="trailingMargin" constant="8" id="Ui9-R3-SKd"/>
                                             <constraint firstItem="qVb-Re-uIg" firstAttribute="centerY" secondItem="543-zD-Ohp" secondAttribute="centerY" id="WbB-gp-R1f"/>
                                             <constraint firstItem="qVb-Re-uIg" firstAttribute="centerX" secondItem="543-zD-Ohp" secondAttribute="centerX" id="ah4-yd-lwd"/>
-                                            <constraint firstItem="543-zD-Ohp" firstAttribute="top" secondItem="Q5A-U0-7nC" secondAttribute="topMargin" constant="-8" id="dmk-9C-i78"/>
                                         </constraints>
                                         <connections>
                                             <outlet property="activityIndicator" destination="qVb-Re-uIg" id="Ozd-LI-z6E"/>
@@ -165,7 +165,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="K5Q-4D-GvC" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1424.8" y="133.5832083958021"/>
+            <point key="canvasLocation" x="1424.8" y="133.00492610837438"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="E4B-JP-CTh">
