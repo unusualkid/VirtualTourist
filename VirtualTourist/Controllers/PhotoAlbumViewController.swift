@@ -23,6 +23,7 @@ class PhotoAlbumViewController: UIViewController {
     
     var indexPaths = [IndexPath]()
     var photos = [Photo]()
+    var photosSelected = [Photo]()
     var pin: Pin?
     var deletePicsEnabled = false
     
@@ -87,9 +88,50 @@ class PhotoAlbumViewController: UIViewController {
     
     @IBAction func toolButtonPressed(_ sender: Any) {
         if deletePicsEnabled {
+            print("deleteEnabled")
             
+            // TODO: app crashes cuz of these two lines.
+            // "Invalid update: invalid number of items in section 0.  The number of items contained in an existing section after the update (3) must be equal to the number of items contained in that section before the update (3), plus or minus the number of items inserted or deleted from that section (0 inserted, 2 deleted) and plus or minus the number of items moved into or out of that section (0 moved in, 0 moved out)."
+            collectionView.deleteItems(at: indexPaths)
+            collectionView.reloadData()
+            
+            
+            //        if let selectedItems = collectionView.indexPathsForSelectedItems {
+            //            print("collectionView.indexPathsForSelectedItems: \(collectionView.indexPathsForSelectedItems) ")
+            //            print("selectedItems: \(selectedItems)")
+            //            for selectedItem in selectedItems {
+            //                print("selectedItem: \(selectedItem)")
+            //
+            //                collectionView.deleteItems(at: [selectedItem])
+            //
+            //                print("photos: \(photos)")
+            //                photos.remove(at: selectedItem.item)
+            //
+            //                let photo = fetchedResultsController.object(at: indexPath) as! Photo
+            //                print("photo: \(photo)")
+            //
+            //                let moc = fetchedResultsController.managedObjectContext
+            //                moc.delete(photo)
+            //
+            //                collectionView.reloadData()
+            //            }
+            //
+            //        }
+            //
+            //        let photo = fetchedResultsController.object(at: indexPath) as! Photo
+            //
+            //        let moc = fetchedResultsController.managedObjectContext
+            //        moc.delete(photo)
+            //
+            //        do {
+            //            try collectionView.deleteItems(at: indexPaths)
+            //        } catch let e as NSError {
+            //            print("Error while trying to delete cell: \n\(e)\n")
+            //        }
+            //
+            //        collectionView.reloadData()
         } else {
-            
+            print("delete NOT Enabled")
         }
     }
     
@@ -204,48 +246,6 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
             toolButton.title = "Delete Selected Pictures"
             deletePicsEnabled = true
         }
-        
-        print("indexPath: \(indexPath)")
-        print("indexPaths: \(indexPaths)")
-
-
-        
-        
-//        if let selectedItems = collectionView.indexPathsForSelectedItems {
-//            print("collectionView.indexPathsForSelectedItems: \(collectionView.indexPathsForSelectedItems) ")
-//            print("selectedItems: \(selectedItems)")
-//            for selectedItem in selectedItems {
-//                print("selectedItem: \(selectedItem)")
-//
-//                collectionView.deleteItems(at: [selectedItem])
-//
-//                print("photos: \(photos)")
-//                photos.remove(at: selectedItem.item)
-//
-//                let photo = fetchedResultsController.object(at: indexPath) as! Photo
-//                print("photo: \(photo)")
-//
-//                let moc = fetchedResultsController.managedObjectContext
-//                moc.delete(photo)
-//
-//                collectionView.reloadData()
-//            }
-//
-//        }
-//
-//        let photo = fetchedResultsController.object(at: indexPath) as! Photo
-//        
-//        let moc = fetchedResultsController.managedObjectContext
-//        moc.delete(photo)
-//        
-//        do {
-//            try collectionView.deleteItems(at: indexPaths)
-//        } catch let e as NSError {
-//            print("Error while trying to delete cell: \n\(e)\n")
-//        }
-//        
-//        collectionView.reloadData()
-
     }
 }
 
