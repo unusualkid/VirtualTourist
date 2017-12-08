@@ -162,7 +162,7 @@ extension CoreDataStack {
                 let fetchRequestPhoto = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
                 let photos = try delegate.stack.backgroundContext.fetch(fetchRequestPhoto) as! [Photo]
                 print("pins: \(pins)")
-//                print("photos: \(photos)")
+                print("photos: \(photos)")
             } catch {
                 print("Error while autosaving")
             }

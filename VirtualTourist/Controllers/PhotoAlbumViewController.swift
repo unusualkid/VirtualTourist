@@ -21,13 +21,24 @@ class PhotoAlbumViewController: UIViewController {
     var blockOperations: [BlockOperation] = []
     let delegate = UIApplication.shared.delegate as! AppDelegate
     
+    var indexPaths = [IndexPath]()
+    var photos = [Photo]()
+    var pin: Pin?
+    var deletePicsEnabled = false
+    
     lazy var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult> = {
         // Create a fetchrequest
         let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
         fr.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
+        
+        let predicate = NSPredicate(format: "pin = %@", argumentArray: [pin])
+        print("predicate: \(predicate)")
+        fr.predicate = predicate
+        
         let delegate = UIApplication.shared.delegate as! AppDelegate
         let context = delegate.stack.context
         let frc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+        
         return frc
     }()
     
@@ -71,6 +82,38 @@ class PhotoAlbumViewController: UIViewController {
         super.viewWillTransition(to: size, with: coordinator)
         performUIUpdatesOnMain {
             self.setUpCollectionCellSize()
+        }
+    }
+    
+    @IBAction func toolButtonPressed(_ sender: Any) {
+        if deletePicsEnabled {
+            
+        } else {
+            
+        }
+    }
+    
+    
+    // Display alert with error message
+    private func displayAlert(errorString: String?) {
+        let controller = UIAlertController()
+        
+        if let errorString = errorString {
+            controller.message = errorString
+        }
+        
+        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { action in controller.dismiss(animated: true, completion: nil)
+        }
+        controller.addAction(okAction)
+        self.present(controller, animated: true, completion: nil)
+    }
+    
+    @IBAction func fetchButtonPressed(_ sender: Any) {
+        if let photos = fetchedResultsController.fetchedObjects as! [Photo]? {
+            self.displayAlert(errorString: """
+                photos:
+                \(photos)
+                """)
         }
     }
 }
@@ -118,10 +161,8 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        
-        return 3
-        //            return fc.sections![section].numberOfObjects
-        
+//        return photos.count
+        return fetchedResultsController.sections![section].numberOfObjects
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -145,17 +186,66 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        var indexPaths = [IndexPath]()
-        indexPaths.append(indexPath)
-        print("indexPath: \(indexPath)")
-        print("indexPaths: \(indexPaths)")
         
-        performUIUpdatesOnMain {
-            
-            collectionView.deleteItems(at: indexPaths)
-            collectionView.reloadData()
+        let cell = collectionView.cellForItem(at: indexPath) as! PhotoAlbumViewCell
+        
+        if let index = indexPaths.index(of: indexPath) {
+            indexPaths.remove(at: index)
+            cell.imageView.alpha = 1.0
+        } else {
+            indexPaths.append(indexPath)
+            cell.imageView.alpha = 0.3
         }
         
+        if indexPaths.count == 0 {
+            toolButton.title = "New Collection"
+            deletePicsEnabled = false
+        } else {
+            toolButton.title = "Delete Selected Pictures"
+            deletePicsEnabled = true
+        }
+        
+        print("indexPath: \(indexPath)")
+        print("indexPaths: \(indexPaths)")
+
+
+        
+        
+//        if let selectedItems = collectionView.indexPathsForSelectedItems {
+//            print("collectionView.indexPathsForSelectedItems: \(collectionView.indexPathsForSelectedItems) ")
+//            print("selectedItems: \(selectedItems)")
+//            for selectedItem in selectedItems {
+//                print("selectedItem: \(selectedItem)")
+//
+//                collectionView.deleteItems(at: [selectedItem])
+//
+//                print("photos: \(photos)")
+//                photos.remove(at: selectedItem.item)
+//
+//                let photo = fetchedResultsController.object(at: indexPath) as! Photo
+//                print("photo: \(photo)")
+//
+//                let moc = fetchedResultsController.managedObjectContext
+//                moc.delete(photo)
+//
+//                collectionView.reloadData()
+//            }
+//
+//        }
+//
+//        let photo = fetchedResultsController.object(at: indexPath) as! Photo
+//        
+//        let moc = fetchedResultsController.managedObjectContext
+//        moc.delete(photo)
+//        
+//        do {
+//            try collectionView.deleteItems(at: indexPaths)
+//        } catch let e as NSError {
+//            print("Error while trying to delete cell: \n\(e)\n")
+//        }
+//        
+//        collectionView.reloadData()
+
     }
 }
 

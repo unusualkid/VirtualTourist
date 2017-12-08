@@ -136,7 +136,11 @@
                                 <rect key="frame" x="0.0" y="729" width="375" height="49"/>
                                 <items>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="N1H-he-cvm"/>
-                                    <barButtonItem title="New Collection" id="NEg-CU-4Sb"/>
+                                    <barButtonItem title="New Collection" id="NEg-CU-4Sb">
+                                        <connections>
+                                            <action selector="toolButtonPressed:" destination="M1r-oG-5rw" id="uOX-Uf-kU7"/>
+                                        </connections>
+                                    </barButtonItem>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="90u-fZ-atU"/>
                                 </items>
                             </toolbar>
@@ -156,6 +160,13 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="aHj-ze-BhX"/>
                     </view>
+                    <navigationItem key="navigationItem" title="Virtual Tourist" id="z3m-7Q-eTm">
+                        <barButtonItem key="rightBarButtonItem" title="Fetch" id="dt0-tf-anr">
+                            <connections>
+                                <action selector="fetchButtonPressed:" destination="M1r-oG-5rw" id="0nU-Hm-UJa"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="collectionView" destination="eP8-MM-L3F" id="pGC-Cv-EwN"/>
                         <outlet property="flowLayout" destination="7Gf-oN-7tV" id="dgF-aY-j5q"/>

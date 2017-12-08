@@ -167,21 +167,21 @@ extension MapViewController {
                 """)
             if let photoVC = segue.destination as? PhotoAlbumViewController {
                 
-                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
-                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
-                
-                print("selectedPin: \(selectedPin)")
-                let predicate = NSPredicate(format: "pin = %@", argumentArray: [selectedPin])
-                print("predicate: \(predicate)")
-                fetchRequest.predicate = predicate
-                
-                let delegate = UIApplication.shared.delegate as! AppDelegate
-                
-                // Create FetchedResultsController
-                let fc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: delegate.stack.context, sectionNameKeyPath: nil, cacheName: nil)
-                
-                photoVC.fetchedResultsController = fc
-                
+//                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
+//                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
+//
+//                print("selectedPin: \(selectedPin)")
+//                let predicate = NSPredicate(format: "pin = %@", argumentArray: [selectedPin])
+//                print("predicate: \(predicate)")
+//                fetchRequest.predicate = predicate
+//
+//                let delegate = UIApplication.shared.delegate as! AppDelegate
+//
+//                // Create FetchedResultsController
+//                let fc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: delegate.stack.context, sectionNameKeyPath: nil, cacheName: nil)
+//
+//                photoVC.fetchedResultsController = fc
+                photoVC.pin = selectedPin
             }
         }
     }
