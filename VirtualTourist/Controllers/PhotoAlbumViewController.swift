@@ -12,6 +12,7 @@ import CoreData
 
 class PhotoAlbumViewController: UIViewController {
     
+    @IBOutlet weak var noImageLabel: UILabel!
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var toolButton: UIBarButtonItem!
     @IBOutlet weak var collectionView: UICollectionView!
@@ -23,25 +24,18 @@ class PhotoAlbumViewController: UIViewController {
     
     var indexPaths = [IndexPath]()
     var photos = [Photo]()
-    var photosSelected = [Photo]()
-    var pin: Pin?
+    var selectedPhotos = [Photo]()
     var deletePicsEnabled = false
+    var pin: Pin?
     
-    lazy var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult> = {
-        // Create a fetchrequest
-        let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
-        fr.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
-        
-        let predicate = NSPredicate(format: "pin = %@", argumentArray: [pin])
-        print("predicate: \(predicate)")
-        fr.predicate = predicate
-        
-        let delegate = UIApplication.shared.delegate as! AppDelegate
-        let context = delegate.stack.context
-        let frc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
-        
-        return frc
-    }()
+    var fetchedResultsController : NSFetchedResultsController<NSFetchRequestResult>? {
+        didSet {
+            // Whenever the frc changes, we execute the search and
+            // reload the collectionView
+            fetchedResultsController?.delegate = self
+//            executeSearch()
+        }
+    }
     
     
     override func viewDidLoad() {
@@ -90,51 +84,32 @@ class PhotoAlbumViewController: UIViewController {
         if deletePicsEnabled {
             print("deleteEnabled")
             
-            // TODO: app crashes cuz of these two lines.
-            // "Invalid update: invalid number of items in section 0.  The number of items contained in an existing section after the update (3) must be equal to the number of items contained in that section before the update (3), plus or minus the number of items inserted or deleted from that section (0 inserted, 2 deleted) and plus or minus the number of items moved into or out of that section (0 moved in, 0 moved out)."
-            collectionView.deleteItems(at: indexPaths)
+            for indexPath in indexPaths {
+                print("1. fetchedResultsController.object(at: indexPath): \(fetchedResultsController?.object(at: indexPath))")
+                let context = fetchedResultsController?.managedObjectContext
+                let photo = fetchedResultsController?.object(at: indexPath) as! Photo
+                context?.delete(photo)
+//                do {
+//                    try context.save()
+//                } catch {
+//                    print("can't be saved")
+//                }
+                
+                print("2. fetchedResultsController.object(at: indexPath): \(fetchedResultsController?.object(at: indexPath))")
+                if let index = indexPaths.index(of: indexPath) {
+                    indexPaths.remove(at: index)
+                }
+                
+            }
             collectionView.reloadData()
-            
-            
-            //        if let selectedItems = collectionView.indexPathsForSelectedItems {
-            //            print("collectionView.indexPathsForSelectedItems: \(collectionView.indexPathsForSelectedItems) ")
-            //            print("selectedItems: \(selectedItems)")
-            //            for selectedItem in selectedItems {
-            //                print("selectedItem: \(selectedItem)")
-            //
-            //                collectionView.deleteItems(at: [selectedItem])
-            //
-            //                print("photos: \(photos)")
-            //                photos.remove(at: selectedItem.item)
-            //
-            //                let photo = fetchedResultsController.object(at: indexPath) as! Photo
-            //                print("photo: \(photo)")
-            //
-            //                let moc = fetchedResultsController.managedObjectContext
-            //                moc.delete(photo)
-            //
-            //                collectionView.reloadData()
-            //            }
-            //
-            //        }
-            //
-            //        let photo = fetchedResultsController.object(at: indexPath) as! Photo
-            //
-            //        let moc = fetchedResultsController.managedObjectContext
-            //        moc.delete(photo)
-            //
-            //        do {
-            //            try collectionView.deleteItems(at: indexPaths)
-            //        } catch let e as NSError {
-            //            print("Error while trying to delete cell: \n\(e)\n")
-            //        }
-            //
-            //        collectionView.reloadData()
+            executeSearch()
+            let photos = 
+                print("fetchedResultsController.fetchObjects: \(fetchedResultsController?.fetchedObjects)")
+            resetToolButton()
         } else {
             print("delete NOT Enabled")
         }
     }
-    
     
     // Display alert with error message
     private func displayAlert(errorString: String?) {
@@ -151,7 +126,7 @@ class PhotoAlbumViewController: UIViewController {
     }
     
     @IBAction func fetchButtonPressed(_ sender: Any) {
-        if let photos = fetchedResultsController.fetchedObjects as! [Photo]? {
+        if let photos = fetchedResultsController?.fetchedObjects as! [Photo]? {
             self.displayAlert(errorString: """
                 photos:
                 \(photos)
@@ -164,12 +139,17 @@ class PhotoAlbumViewController: UIViewController {
 // Utility functions
 extension PhotoAlbumViewController {
     // Set up cell size to auto adjust based on the device's width
-    func setUpCollectionCellSize() {
+    private func setUpCollectionCellSize() {
         let space:CGFloat = 1.0
         let dimension = (collectionView.bounds.size.width - (2 * space)) / 3.0
         flowLayout.minimumInteritemSpacing = space
         flowLayout.minimumLineSpacing = space
         flowLayout.itemSize = CGSize(width: dimension, height: dimension)
+    }
+    
+    private func resetToolButton() {
+        toolButton.title = "New Collection"
+        deletePicsEnabled = false
     }
     
 }
@@ -203,13 +183,18 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-//        return photos.count
-        return fetchedResultsController.sections![section].numberOfObjects
+        let numberOfCells = (fetchedResultsController?.sections![section].numberOfObjects)!
+        if numberOfCells == 0 {
+            noImageLabel.isHidden = false
+        } else {
+            noImageLabel.isHidden = true
+        }
+        return numberOfCells
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        let photo = fetchedResultsController.object(at: indexPath) as! Photo
+        let photo = fetchedResultsController?.object(at: indexPath) as! Photo
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
         
         var imageURL: URL!
@@ -217,10 +202,13 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         if let url = photo.url {
             imageURL = URL(string: url)
         }
+        print("imageURL: \(imageURL)")
         
-        if let imageData = try? Data(contentsOf: imageURL!) {
-            performUIUpdatesOnMain {
-                cell.imageView.image = UIImage(data: imageData)
+        if let imageURL = imageURL {
+            if let imageData = try? Data(contentsOf: imageURL) {
+                performUIUpdatesOnMain {
+                    cell.imageView.image = UIImage(data: imageData)
+                }
             }
         }
         
@@ -231,6 +219,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         
         let cell = collectionView.cellForItem(at: indexPath) as! PhotoAlbumViewCell
         
+        // If selected item is not in IndexPaths array, append it and tint the picture
         if let index = indexPaths.index(of: indexPath) {
             indexPaths.remove(at: index)
             cell.imageView.alpha = 1.0
@@ -239,9 +228,9 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
             cell.imageView.alpha = 0.3
         }
         
+        // If no item selected, show "New Collection" on the tool button, else "Delete Selected Pictures"
         if indexPaths.count == 0 {
-            toolButton.title = "New Collection"
-            deletePicsEnabled = false
+            resetToolButton()
         } else {
             toolButton.title = "Delete Selected Pictures"
             deletePicsEnabled = true
@@ -253,23 +242,10 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     
     func executeSearch() {
         do {
-            try fetchedResultsController.performFetch()
+            try fetchedResultsController?.performFetch()
         } catch let e as NSError {
             print("Error while trying to perform a search: \n\(e)\n\(fetchedResultsController)")
         }
-    }
-    
-    func fetchPhotosFromCoreData() -> [Photo]? {
-        do {
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
-            let results = try delegate.stack.backgroundContext.fetch(fetchRequest) as! [Photo]
-            print("results: \(results)")
-            return results
-            
-        } catch let error as NSError {
-            print("Could not fetch \(error), \(error.userInfo)")
-        }
-        return nil
     }
     
     func controllerWillChangeContent(controller: NSFetchedResultsController<NSFetchRequestResult>) {

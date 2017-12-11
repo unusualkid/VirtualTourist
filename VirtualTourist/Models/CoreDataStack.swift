@@ -161,8 +161,14 @@ extension CoreDataStack {
                 let pins = try delegate.stack.backgroundContext.fetch(fetchRequestPin) as! [Pin]
                 let fetchRequestPhoto = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
                 let photos = try delegate.stack.backgroundContext.fetch(fetchRequestPhoto) as! [Photo]
-                print("pins: \(pins)")
-                print("photos: \(photos)")
+                print("PINS: \(pins.count)")
+                for pin in pins {
+                    print("pin \(pins.index(of: pin)): \(pin)")
+                }
+                print("\nPHOTOS: \(photos.count)")
+                for photo in photos {
+                    print("photo \(photos.index(of: photo)): \(photo)")
+                }
             } catch {
                 print("Error while autosaving")
             }

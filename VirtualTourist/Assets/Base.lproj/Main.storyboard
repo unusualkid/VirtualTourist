@@ -96,6 +96,13 @@
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
+                                <label key="backgroundView" hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No images are found." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="bVt-lY-wOY">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="464"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="PhotoAlbumViewCell" id="Q5A-U0-7nC" customClass="PhotoAlbumViewCell" customModule="VirtualTourist" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="117" height="106"/>
@@ -112,7 +119,6 @@
                                                 </imageView>
                                             </subviews>
                                         </view>
-                                        <color key="backgroundColor" red="0.37664122169999997" green="0.73163608769999999" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstItem="543-zD-Ohp" firstAttribute="leading" secondItem="Q5A-U0-7nC" secondAttribute="leadingMargin" constant="-8" id="FUI-sA-y99"/>
                                             <constraint firstItem="543-zD-Ohp" firstAttribute="bottom" secondItem="Q5A-U0-7nC" secondAttribute="bottomMargin" constant="8" id="HJB-gA-pMv"/>
@@ -171,6 +177,7 @@
                         <outlet property="collectionView" destination="eP8-MM-L3F" id="pGC-Cv-EwN"/>
                         <outlet property="flowLayout" destination="7Gf-oN-7tV" id="dgF-aY-j5q"/>
                         <outlet property="mapView" destination="0SM-Tk-yq9" id="btC-fN-pN6"/>
+                        <outlet property="noImageLabel" destination="bVt-lY-wOY" id="Gti-Ip-N5f"/>
                         <outlet property="toolButton" destination="NEg-CU-4Sb" id="cBR-5J-4KJ"/>
                     </connections>
                 </viewController>

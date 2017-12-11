@@ -18,9 +18,11 @@ class MapViewController: UIViewController {
     // The point annotations will be stored in this array, and then provided to the map view.
     var annotations = [MKPointAnnotation]()
     
+    // Boolean set to true when edit mode is on
     var deletePinEnabled = false
     
-    var selectedPin = Pin()
+    // Pass the clicked pin to the PhotoAlbumVC
+    var selectedPin: Pin?
     
     lazy var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult> = {
         // Create a fetchrequest
@@ -124,9 +126,9 @@ class MapViewController: UIViewController {
                         for photo in photos {
                             print("photo: \(photo)")
                             let url = URL(string: photo["url_m"] as! String)
-                            
+
                             let newPhoto = Photo(url: String(describing: url!), context: moc)
-                            
+
                             newPhoto.pin = pin
                             print("newPhoto: \(newPhoto)")
                         }
@@ -135,6 +137,31 @@ class MapViewController: UIViewController {
                         print(error ?? "empty error")
                     }
                 }
+            }
+        }
+    }
+    
+    // Segue preparation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier! == "displayPinPhotos" {
+            print("if segue.identifier! == \"displayPinPhotos\"")
+            if let photoVC = segue.destination as? PhotoAlbumViewController {
+                
+                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
+                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
+                
+                print("selectedPin: \(selectedPin)")
+                let predicate = NSPredicate(format: "pin = %@", argumentArray: [selectedPin])
+                print("predicate: \(predicate)")
+                fetchRequest.predicate = predicate
+                
+                let delegate = UIApplication.shared.delegate as! AppDelegate
+                
+                // Create FetchedResultsController
+                let fc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: delegate.stack.context, sectionNameKeyPath: nil, cacheName: nil)
+                
+                photoVC.fetchedResultsController = fc
+                
             }
         }
     }
@@ -154,36 +181,21 @@ extension MapViewController: NSFetchedResultsControllerDelegate {
         print("pins: \(pins)")
         return pins
     }
-}
-
-// Segue preparation
-extension MapViewController {
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let controller = segue.destination as! PhotoAlbumViewController
+    
+    func getClickedPin(lat: Double, lon: Double) -> Pin? {
+        let context = fetchedResultsController.managedObjectContext
+        let fetchRequest = fetchedResultsController.fetchRequest
+        let predicateLat = NSPredicate(format: "lat = %@", argumentArray: [lat])
+        let predicateLon = NSPredicate(format: "lon = %@", argumentArray: [lon])
+        let predicateLatLon = NSCompoundPredicate(andPredicateWithSubpredicates: [predicateLat, predicateLon])
+        fetchRequest.predicate = predicateLatLon
         
-        if segue.identifier! == "displayPinPhotos" {
-            print("""
-                if segue.identifier! == "displayPinPhotos"
-                """)
-            if let photoVC = segue.destination as? PhotoAlbumViewController {
-                
-//                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
-//                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
-//
-//                print("selectedPin: \(selectedPin)")
-//                let predicate = NSPredicate(format: "pin = %@", argumentArray: [selectedPin])
-//                print("predicate: \(predicate)")
-//                fetchRequest.predicate = predicate
-//
-//                let delegate = UIApplication.shared.delegate as! AppDelegate
-//
-//                // Create FetchedResultsController
-//                let fc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: delegate.stack.context, sectionNameKeyPath: nil, cacheName: nil)
-//
-//                photoVC.fetchedResultsController = fc
-                photoVC.pin = selectedPin
-            }
+        let pins = try? context.fetch(fetchRequest) as! [Pin]
+
+        if let pins = pins {
+            return pins[0]
         }
+        return nil
     }
 }
 
@@ -207,48 +219,24 @@ extension MapViewController: MKMapViewDelegate {
     
     // Segue to the PhotoAlbumView when a pin is clicked or if the edit mode is on, delete the pin
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        
-        // Get the clicked pin from CoreData
-        let moc = fetchedResultsController.managedObjectContext
-        let fetchRequest = fetchedResultsController.fetchRequest
-        let predicateLat = NSPredicate(format: "lat = %@", argumentArray: [(view.annotation?.coordinate.latitude)!])
-        let predicateLon = NSPredicate(format: "lon = %@", argumentArray: [(view.annotation?.coordinate.longitude)!])
-        let predicateLatLon = NSCompoundPredicate(andPredicateWithSubpredicates: [predicateLat, predicateLon])
-        fetchRequest.predicate = predicateLatLon
+        selectedPin = getClickedPin(lat: (view.annotation?.coordinate.latitude)!, lon: (view.annotation?.coordinate.longitude)!)
         
         if !deletePinEnabled {
             FlickrClient.sharedInstance.latitude = (view.annotation?.coordinate.latitude)!
             FlickrClient.sharedInstance.longitude = (view.annotation?.coordinate.longitude)!
             
-            //            index = (mapView.annotations as NSArray).index(of: view.annotation!)
-            //            print ("Annotation Index = \(index)")
-            //
-            //            print(view.IndexPath)
-            if let pins = try? moc.fetch(fetchRequest) {
-                for pin in pins {
-                    selectedPin = pin as! Pin
-                    print("selectedPin: \(selectedPin)")
-                }
-            }
             performSegue(withIdentifier: "displayPinPhotos", sender: self)
             
-            
         } else {
-            if let pins = try? moc.fetch(fetchRequest) {
-                print("pins: \(pins)")
-                for pin in pins {
-                    moc.delete(pin as! NSManagedObject)
-                }
+            if let pin = selectedPin {
+                fetchedResultsController.managedObjectContext.delete(pin)
             }
-            
             mapView.removeAnnotation(view.annotation!)
         }
         
     }
     
     func mapViewWillStartRenderingMap(_ mapView: MKMapView) {
-        print("mapViewWillStartRenderingMap")
-        print("UserDefaults.standard.bool(forKey: Constants.Map.Key.IsFirstLoad): \(UserDefaults.standard.bool(forKey: Constants.Map.Key.IsFirstLoad)) ")
         if UserDefaults.standard.bool(forKey: Constants.Map.Key.IsFirstLoad) {
             if let latitude = UserDefaults.standard.value(forKey: Constants.Map.Key.Latitude),
                 let longitude = UserDefaults.standard.value(forKey: Constants.Map.Key.Longitude),
@@ -263,7 +251,6 @@ extension MapViewController: MKMapViewDelegate {
     }
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        print("mapView regionDidChange")
         UserDefaults.standard.set(false, forKey: Constants.Map.Key.IsFirstLoad)
         UserDefaults.standard.set(mapView.centerCoordinate.latitude, forKey: Constants.Map.Key.Latitude)
         UserDefaults.standard.set(mapView.centerCoordinate.longitude, forKey: Constants.Map.Key.Longitude)
