@@ -55,6 +55,7 @@ class PhotoAlbumViewController: UIViewController {
         setUpNavigationBar()
         
         setUpMapView()
+        
         DispatchQueue.main.async{
             self.setUpCollectionViewLayout()
         }
@@ -108,7 +109,6 @@ class PhotoAlbumViewController: UIViewController {
         if selectedIndexes.isEmpty {
             deleteAllPhotos()
             
-            print("All images deleted.")
             FlickrClient.sharedInstance.getImages { (photos, error) in
                 if let photos = photos {
                     for photo in photos {
@@ -139,16 +139,6 @@ class PhotoAlbumViewController: UIViewController {
 
 // Utility functions
 extension PhotoAlbumViewController {
-    func setUpCollectionViewLayout() {
-        let space:CGFloat = 1.0
-        let dimension = (collectionView.bounds.size.width - (2 * space)) / 3.0
-        
-        flowLayout.minimumInteritemSpacing = space
-        flowLayout.minimumLineSpacing = space
-        flowLayout.itemSize = CGSize(width: dimension, height: dimension)
-        flowLayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-    }
-    
     func setUpNavigationBar() {
         title = "Virtual Tourist"
         navigationItem.backBarButtonItem?.title = "Back"
@@ -174,6 +164,16 @@ extension PhotoAlbumViewController {
         mapView.addAnnotation(annotation)
     }
     
+    func setUpCollectionViewLayout() {
+        let space:CGFloat = 1.0
+        let dimension = (collectionView.bounds.size.width - (2 * space)) / 3.0
+        
+        flowLayout.minimumInteritemSpacing = space
+        flowLayout.minimumLineSpacing = space
+        flowLayout.itemSize = CGSize(width: dimension, height: dimension)
+        flowLayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+    }
+    
     func updateToolButton() {
         if selectedIndexes.count > 0 {
             toolButton.title = "Delete Selected Pictures"
@@ -186,8 +186,6 @@ extension PhotoAlbumViewController {
     
     func configureCell(_ cell: PhotoAlbumViewCell, atIndexPath indexPath: IndexPath) {
         print("in configureCell")
-        // If the cell is "selected", its color panel is grayed out
-        // we use the Swift `find` function to see if the indexPath is in the array
         
         if let _ = selectedIndexes.index(of: indexPath) {
             cell.imageView.alpha = 0.5
@@ -219,6 +217,7 @@ extension PhotoAlbumViewController {
     }
     
     func deleteAllPhotos() {
+        print("in deleteAllPhotos()")
         for photo in (fetchedResultsController.fetchedObjects)! {
             let context = fetchedResultsController.managedObjectContext
             context.delete(photo as! NSManagedObject)
@@ -227,9 +226,12 @@ extension PhotoAlbumViewController {
     }
     
     func deleteSelectedPhotos() {
+        print("in deleteSelectedPhotos()")
         var photosToDelete = [Photo]()
         
         for indexPath in selectedIndexes {
+            print("indexPath: \(indexPath)")
+            print("indexPath.row: \(indexPath.row)")
             photos.remove(at: indexPath.row)
             photosToDelete.append(fetchedResultsController.object(at: indexPath) as! Photo)
         }
@@ -237,8 +239,7 @@ extension PhotoAlbumViewController {
         for photo in photosToDelete {
             fetchedResultsController.managedObjectContext.delete(photo)
         }
-        
-        selectedIndexes = [IndexPath]()
+        selectedIndexes.removeAll()
     }
 }
 
@@ -268,16 +269,15 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("in collectionView(_:numberOfItemsInSection)")
         print("photos.count: \(photos.count)")
-        
         return photos.count
-//        return 6
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         print("in collectionView(_:cellForItemAtIndexPath)")
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
         
+        cell.activityIndicator.hidesWhenStopped = true
         cell.activityIndicator.startAnimating()
         cell.activityIndicator.isHidden = false
         
@@ -290,19 +290,18 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
             }
         } else {
             if let url = photo.url {
-                var imageURL = URL(string: url)
-                
-                if let url = imageURL {
-                    if let imageData = try? Data(contentsOf: url) {
-                        DispatchQueue.main.async {
-                            cell.activityIndicator.stopAnimating()
-                            cell.activityIndicator.isHidden = true
-                            cell.imageView.image = UIImage(data: imageData)
+                FlickrClient.sharedInstance.downloadPhotos(url, completionHandlerForDownloadPhotos: { (imageData, error) in
+                    if let error = error {
+                        print(error.localizedDescription)
+                    } else {
+                        if let imageData = imageData {
+                            DispatchQueue.main.async {
+                                cell.activityIndicator.stopAnimating()
+                                cell.imageView?.image = UIImage(data: imageData)
+                            }
                         }
                     }
-                }
-            } else {
-                print("Cannot unwrap photo.url")
+                })
             }
         }
         return cell
@@ -313,10 +312,17 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         
         let cell = collectionView.cellForItem(at: indexPath) as! PhotoAlbumViewCell
         
+        print("selectedCell IndexPath: \(indexPath)")
+        
         // If selected cell is not in selectedIndexes array, append it
         if let index = selectedIndexes.index(of: indexPath) {
+            print("in removing selectedCell")
+            print("index: \(index)")
+            print("selectedIndexes.index(of: indexPath): \(selectedIndexes.index(of: indexPath))")
             selectedIndexes.remove(at: index)
         } else {
+            print("in appending selectedCell")
+            print("indexPath: \(indexPath)")
             selectedIndexes.append(indexPath)
         }
         

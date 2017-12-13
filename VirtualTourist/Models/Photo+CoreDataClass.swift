@@ -20,7 +20,6 @@ public class Photo: NSManagedObject {
         if let ent = NSEntityDescription.entity(forEntityName: "Photo", in: context) {
             self.init(entity: ent, insertInto: context)
             self.url = url
-            self.isFinishedDownloading = isFinishedDownloading
         } else {
             fatalError("Unable to find Entity name!")
         }

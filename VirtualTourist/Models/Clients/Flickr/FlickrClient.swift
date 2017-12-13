@@ -26,6 +26,24 @@ class FlickrClient: NSObject {
         super.init()
     }
     
+    func downloadPhotos(_ imageURLString: String, completionHandlerForDownloadPhotos: @escaping (_ imageData: Data?, _ error: NSError?) -> Void) {
+        let imageURL = URL(string: imageURLString)
+        let request = URLRequest(url: imageURL!)
+        
+        let task = session.dataTask(with: request as URLRequest) { (data, response, error) in
+            if let error = error {
+                completionHandlerForDownloadPhotos(nil, error as NSError)
+            } else {
+                guard let imageData = data else {
+                    print("No data was downloaded from the given URL.")
+                    return
+                }
+                completionHandlerForDownloadPhotos(imageData, nil)
+            }
+        }
+        task.resume()
+    }
+    
     func getImages(completionHandlerForGetImages: @escaping (_ photos: [[String : AnyObject]]?, _ error: String?) -> Void) {
         print("getImages()")
         

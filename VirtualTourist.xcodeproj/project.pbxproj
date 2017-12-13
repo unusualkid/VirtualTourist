@@ -419,7 +419,7 @@
 				3CA1FE401FDFBDE8004815F5 /* Model2.xcdatamodel */,
 				3C53950E1FA8769A00ECC3E3 /* Model.xcdatamodel */,
 			);
-			currentVersion = 3CA1FE401FDFBDE8004815F5 /* Model2.xcdatamodel */;
+			currentVersion = 3C53950E1FA8769A00ECC3E3 /* Model.xcdatamodel */;
 			path = Model.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
