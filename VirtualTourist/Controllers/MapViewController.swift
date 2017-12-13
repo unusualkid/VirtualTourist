@@ -24,12 +24,13 @@ class MapViewController: UIViewController {
     // Pass the clicked pin to the PhotoAlbumVC
     var selectedPin: Pin?
     
+    let delegate = UIApplication.shared.delegate as! AppDelegate
     lazy var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult> = {
         // Create a fetchrequest
         let fr = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
         fr.sortDescriptors = [NSSortDescriptor(key: "lat", ascending: true),
                               NSSortDescriptor(key: "lon", ascending: true)]
-        let delegate = UIApplication.shared.delegate as! AppDelegate
+
         let context = delegate.stack.context
         let frc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
         return frc
@@ -62,37 +63,6 @@ class MapViewController: UIViewController {
         }
     }
     
-    // Display alert with error message
-    private func displayAlert(errorString: String?) {
-        let controller = UIAlertController()
-        
-        if let errorString = errorString {
-            controller.message = errorString
-        }
-        
-        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { action in controller.dismiss(animated: true, completion: nil)
-        }
-        controller.addAction(okAction)
-        self.present(controller, animated: true, completion: nil)
-    }
-    
-    @IBAction func fetchButtonPressed(_ sender: Any) {
-        if let pins = fetchAnnotationsFromCoreData() {
-            performUIUpdatesOnMain {
-                for pin in pins {
-                    let annotation = MKPointAnnotation()
-                    annotation.coordinate.latitude = pin.lat
-                    annotation.coordinate.longitude = pin.lon
-                    self.mapView.addAnnotation(annotation)
-                }
-                self.displayAlert(errorString: """
-                    pins:
-                    \(pins)
-                    """)
-            }
-        }
-    }
-    
     @IBAction func editButtonPressed(_ sender: Any) {
         if view.frame.origin.y == 0 {
             view.frame.origin.y = -50
@@ -118,26 +88,7 @@ class MapViewController: UIViewController {
             
             annotation.coordinate = coordinates
             mapView.addAnnotation(annotation)
-            
-            if (pin.photos?.count)! == 0 {
-                FlickrClient.sharedInstance.getImages { (photos, error) in
-                    print("pin: \(pin)")
-                    if let photos = photos {
-                        for photo in photos {
-                            print("photo: \(photo)")
-                            let url = URL(string: photo["url_m"] as! String)
 
-                            let newPhoto = Photo(url: String(describing: url!), context: moc)
-
-                            newPhoto.pin = pin
-                            print("newPhoto: \(newPhoto)")
-                        }
-                        print("pin: \(pin)")
-                    } else {
-                        print(error ?? "empty error")
-                    }
-                }
-            }
         }
     }
     
@@ -146,22 +97,7 @@ class MapViewController: UIViewController {
         if segue.identifier! == "displayPinPhotos" {
             print("if segue.identifier! == \"displayPinPhotos\"")
             if let photoVC = segue.destination as? PhotoAlbumViewController {
-                
-                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
-                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "url", ascending: true)]
-                
-                print("selectedPin: \(selectedPin)")
-                let predicate = NSPredicate(format: "pin = %@", argumentArray: [selectedPin])
-                print("predicate: \(predicate)")
-                fetchRequest.predicate = predicate
-                
-                let delegate = UIApplication.shared.delegate as! AppDelegate
-                
-                // Create FetchedResultsController
-                let fc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: delegate.stack.context, sectionNameKeyPath: nil, cacheName: nil)
-                
-                photoVC.fetchedResultsController = fc
-                
+                photoVC.pin = selectedPin
             }
         }
     }
@@ -225,8 +161,10 @@ extension MapViewController: MKMapViewDelegate {
             FlickrClient.sharedInstance.latitude = (view.annotation?.coordinate.latitude)!
             FlickrClient.sharedInstance.longitude = (view.annotation?.coordinate.longitude)!
             
-            performSegue(withIdentifier: "displayPinPhotos", sender: self)
+            let photoVC = storyboard?.instantiateViewController(withIdentifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
+            photoVC.pin = selectedPin
             
+            navigationController?.pushViewController(photoVC, animated: true)
         } else {
             if let pin = selectedPin {
                 fetchedResultsController.managedObjectContext.delete(pin)

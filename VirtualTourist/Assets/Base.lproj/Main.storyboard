@@ -6,7 +6,6 @@
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
-        <capability name="Navigation items with more than one left or right bar item" minToolsVersion="7.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -47,23 +46,15 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <navigationItem key="navigationItem" title="Virtual Tourist" id="nnH-cv-ZTM">
-                        <rightBarButtonItems>
-                            <barButtonItem title="Edit" id="npA-xK-15z">
-                                <connections>
-                                    <action selector="editButtonPressed:" destination="BYZ-38-t0r" id="jov-KV-BIe"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem title="Fetch" id="BP7-xZ-M9r">
-                                <connections>
-                                    <action selector="fetchButtonPressed:" destination="BYZ-38-t0r" id="yDi-gb-La9"/>
-                                </connections>
-                            </barButtonItem>
-                        </rightBarButtonItems>
+                        <barButtonItem key="rightBarButtonItem" title="Edit" id="npA-xK-15z">
+                            <connections>
+                                <action selector="editButtonPressed:" destination="BYZ-38-t0r" id="jov-KV-BIe"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="deletePinLabel" destination="CII-xa-SnM" id="9jX-uK-aBX"/>
                         <outlet property="mapView" destination="hbh-cE-ENm" id="G8o-jj-Ayx"/>
-                        <segue destination="M1r-oG-5rw" kind="show" identifier="displayPinPhotos" id="GPt-MO-Nbh"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -79,7 +70,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" zoomEnabled="NO" scrollEnabled="NO" rotateEnabled="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0SM-Tk-yq9">
-                                <rect key="frame" x="0.0" y="88" width="375" height="177"/>
+                                <rect key="frame" x="0.0" y="44" width="375" height="177"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="177" id="uug-K1-biQ"/>
                                 </constraints>
@@ -88,7 +79,7 @@
                                 </connections>
                             </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="eP8-MM-L3F">
-                                <rect key="frame" x="0.0" y="265" width="375" height="464"/>
+                                <rect key="frame" x="0.0" y="221" width="375" height="508"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="7Gf-oN-7tV">
                                     <size key="itemSize" width="117" height="106"/>
@@ -97,7 +88,7 @@
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <label key="backgroundView" hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No images are found." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="bVt-lY-wOY">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="464"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="508"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                     <nil key="textColor"/>
@@ -166,13 +157,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="aHj-ze-BhX"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Virtual Tourist" id="z3m-7Q-eTm">
-                        <barButtonItem key="rightBarButtonItem" title="Fetch" id="dt0-tf-anr">
-                            <connections>
-                                <action selector="fetchButtonPressed:" destination="M1r-oG-5rw" id="0nU-Hm-UJa"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="Virtual Tourist" id="z3m-7Q-eTm"/>
                     <connections>
                         <outlet property="collectionView" destination="eP8-MM-L3F" id="pGC-Cv-EwN"/>
                         <outlet property="flowLayout" destination="7Gf-oN-7tV" id="dgF-aY-j5q"/>

@@ -2,7 +2,7 @@
 //  Photo+CoreDataClass.swift
 //  VirtualTourist
 //
-//  Created by Kenneth Chen on 11/23/17.
+//  Created by Kenneth Chen on 12/12/17.
 //  Copyright © 2017 Cotery. All rights reserved.
 //
 //
@@ -12,7 +12,7 @@ import CoreData
 
 @objc(Photo)
 public class Photo: NSManagedObject {
-    convenience init(url: String, context: NSManagedObjectContext) {
+    convenience init(url: String, isFinishedDownloading: Bool, context: NSManagedObjectContext) {
         
         // An EntityDescription is an object that has access to all
         // the information you provided in the Entity part of the model
@@ -20,6 +20,7 @@ public class Photo: NSManagedObject {
         if let ent = NSEntityDescription.entity(forEntityName: "Photo", in: context) {
             self.init(entity: ent, insertInto: context)
             self.url = url
+            self.isFinishedDownloading = isFinishedDownloading
         } else {
             fatalError("Unable to find Entity name!")
         }

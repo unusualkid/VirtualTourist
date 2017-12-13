@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="13533" systemVersion="17C88" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Photo" representedClassName="Photo" syncable="YES">
+        <attribute name="imageData" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="isFinishedDownloading" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="url" attributeType="String" syncable="YES"/>
+        <relationship name="pin" maxCount="1" deletionRule="Nullify" destinationEntity="Pin" inverseName="photos" inverseEntity="Pin" syncable="YES"/>
+        <fetchIndex name="byUrlIndex">
+            <fetchIndexElement property="url" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <entity name="Pin" representedClassName="Pin" syncable="YES">
+        <attribute name="createdDate" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lat" attributeType="Double" minValueString="-90" maxValueString="90" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="lon" attributeType="Double" minValueString="-180" maxValueString="180" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <relationship name="photos" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Photo" inverseName="pin" inverseEntity="Photo" syncable="YES"/>
+        <fetchIndex name="byLatIndex">
+            <fetchIndexElement property="lat" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byLonIndex">
+            <fetchIndexElement property="lon" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byCreatedDateIndex">
+            <fetchIndexElement property="createdDate" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <elements>
+        <element name="Photo" positionX="-18" positionY="-9" width="128" height="105"/>
+        <element name="Pin" positionX="178" positionY="-36" width="128" height="105"/>
+    </elements>
+</model>
