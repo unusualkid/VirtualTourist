@@ -56,7 +56,7 @@ class MapViewController: UIViewController {
                 let annotation = MKPointAnnotation()
                 annotation.coordinate.latitude = pin.lat
                 annotation.coordinate.longitude = pin.lon
-                performUIUpdatesOnMain {
+                DispatchQueue.main.async {
                     self.mapView.addAnnotation(annotation)
                 }
             }

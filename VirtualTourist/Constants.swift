@@ -5,7 +5,6 @@
 //  Created by Kenneth Chen on 10/31/17.
 //  Copyright © 2017 Cotery. All rights reserved.
 //
-
 import Foundation
 
 struct Constants {
@@ -56,7 +55,7 @@ struct Constants {
         static let DisableJSONCallback = 1        /* 1 means "yes" */
         static let MediumURL = "url_m"
         static let UseSafeSearch = 1
-        static let PerPage = 3
+        static let PerPage = 24
     }
     
     // MARK: Flickr Response Keys

@@ -55,8 +55,9 @@ class PhotoAlbumViewController: UIViewController {
         setUpNavigationBar()
         
         setUpMapView()
-        
-        setUpCollectionViewLayout()
+        DispatchQueue.main.async{
+            self.setUpCollectionViewLayout()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -84,9 +85,7 @@ class PhotoAlbumViewController: UIViewController {
                 }
             }
         }
-        
 
-        
         
         // TODO: set noImageLabel to not hidden in this VC
         // If the pin has no related photos in core data, set pinHasNoImage to true
@@ -100,8 +99,8 @@ class PhotoAlbumViewController: UIViewController {
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        performUIUpdatesOnMain {
-            self.setUpCollectionCellSize()
+        DispatchQueue.main.async {
+            self.setUpCollectionViewLayout()
         }
     }
     
@@ -139,10 +138,10 @@ class PhotoAlbumViewController: UIViewController {
 
 
 // Utility functions
-extension PhotoAlbumViewController {    
+extension PhotoAlbumViewController {
     func setUpCollectionViewLayout() {
         let space:CGFloat = 1.0
-        let dimension = (view.frame.size.width - (2 * space)) / 3.0
+        let dimension = (collectionView.bounds.size.width - (2 * space)) / 3.0
         
         flowLayout.minimumInteritemSpacing = space
         flowLayout.minimumLineSpacing = space
@@ -283,22 +282,29 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         cell.activityIndicator.isHidden = false
         
         let photo = photos[indexPath.row]
-        var imageURL: URL!
-
-        if let url = photo.url {
-            imageURL = URL(string: url)
-        }
-
-        if let imageURL = imageURL {
-            if let imageData = try? Data(contentsOf: imageURL) {
-                performUIUpdatesOnMain {
-                    cell.activityIndicator.stopAnimating()
-                    cell.activityIndicator.isHidden = true
-                    cell.imageView.image = UIImage(data: imageData)
+        if let photoImage = photo.imageData {
+            print("in if let photoImage = photo.imageData")
+            DispatchQueue.main.async {
+                cell.activityIndicator.stopAnimating()
+                cell.imageView?.image = UIImage(data: photoImage as Data)
+            }
+        } else {
+            if let url = photo.url {
+                var imageURL = URL(string: url)
+                
+                if let url = imageURL {
+                    if let imageData = try? Data(contentsOf: url) {
+                        DispatchQueue.main.async {
+                            cell.activityIndicator.stopAnimating()
+                            cell.activityIndicator.isHidden = true
+                            cell.imageView.image = UIImage(data: imageData)
+                        }
+                    }
                 }
+            } else {
+                print("Cannot unwrap photo.url")
             }
         }
-        
         return cell
     }
     
