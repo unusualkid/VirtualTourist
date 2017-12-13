@@ -110,6 +110,7 @@
                                                 </imageView>
                                             </subviews>
                                         </view>
+                                        <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="0.40000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstItem="543-zD-Ohp" firstAttribute="leading" secondItem="Q5A-U0-7nC" secondAttribute="leadingMargin" constant="-8" id="FUI-sA-y99"/>
                                             <constraint firstItem="543-zD-Ohp" firstAttribute="bottom" secondItem="Q5A-U0-7nC" secondAttribute="bottomMargin" constant="8" id="HJB-gA-pMv"/>

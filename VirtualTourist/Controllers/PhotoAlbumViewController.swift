@@ -52,31 +52,11 @@ class PhotoAlbumViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "Virtual Tourist"
-        navigationItem.backBarButtonItem?.title = "Back"
+        setUpNavigationBar()
         
-        mapView.isZoomEnabled = false
-        mapView.isScrollEnabled = false
-        mapView.removeAnnotations(mapView.annotations)
+        setUpMapView()
         
-        // The lat and long are used to create a CLLocationCoordinates2D instance.
-        let coordinate = CLLocationCoordinate2D(latitude: FlickrClient.sharedInstance.latitude, longitude: FlickrClient.sharedInstance.longitude)
-        
-        mapView.centerCoordinate = coordinate
-        
-        // Here we create the annotation and set its coordiate, title, and subtitle properties
-        let annotation = MKPointAnnotation()
-        annotation.coordinate = coordinate
-        
-        let region = MKCoordinateRegionMakeWithDistance(coordinate, 10000, 10000)
-        mapView.setRegion(region, animated: true)
-        
-        mapView.addAnnotation(annotation)
-        
-        performUIUpdatesOnMain {
-            self.setUpCollectionCellSize()
-        }
-        
+        setUpCollectionViewLayout()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -159,14 +139,40 @@ class PhotoAlbumViewController: UIViewController {
 
 
 // Utility functions
-extension PhotoAlbumViewController {
-    // Set up cell size to auto adjust based on the device's width
-    func setUpCollectionCellSize() {
+extension PhotoAlbumViewController {    
+    func setUpCollectionViewLayout() {
         let space:CGFloat = 1.0
-        let dimension = (collectionView.bounds.size.width - (2 * space)) / 3.0
+        let dimension = (view.frame.size.width - (2 * space)) / 3.0
+        
         flowLayout.minimumInteritemSpacing = space
         flowLayout.minimumLineSpacing = space
         flowLayout.itemSize = CGSize(width: dimension, height: dimension)
+        flowLayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+    }
+    
+    func setUpNavigationBar() {
+        title = "Virtual Tourist"
+        navigationItem.backBarButtonItem?.title = "Back"
+    }
+    
+    func setUpMapView() {
+        mapView.isZoomEnabled = false
+        mapView.isScrollEnabled = false
+        mapView.removeAnnotations(mapView.annotations)
+        
+        // The lat and long are used to create a CLLocationCoordinates2D instance.
+        let coordinate = CLLocationCoordinate2D(latitude: FlickrClient.sharedInstance.latitude, longitude: FlickrClient.sharedInstance.longitude)
+        
+        mapView.centerCoordinate = coordinate
+        
+        // Here we create the annotation and set its coordiate, title, and subtitle properties
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = coordinate
+        
+        let region = MKCoordinateRegionMakeWithDistance(coordinate, 10000, 10000)
+        mapView.setRegion(region, animated: true)
+        
+        mapView.addAnnotation(annotation)
     }
     
     func updateToolButton() {
@@ -255,16 +261,17 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 }
 
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        print("in numberOfSectionsInCollectionView()")
-        return self.fetchedResultsController.sections?.count ?? 0
-    }
+//    func numberOfSections(in collectionView: UICollectionView) -> Int {
+//        print("in numberOfSectionsInCollectionView()")
+//        return self.fetchedResultsController.sections?.count ?? 0
+//    }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("in collectionView(_:numberOfItemsInSection)")
         print("photos.count: \(photos.count)")
         
         return photos.count
+//        return 6
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -277,11 +284,11 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         
         let photo = photos[indexPath.row]
         var imageURL: URL!
-        
+
         if let url = photo.url {
             imageURL = URL(string: url)
         }
-        
+
         if let imageURL = imageURL {
             if let imageData = try? Data(contentsOf: imageURL) {
                 performUIUpdatesOnMain {
