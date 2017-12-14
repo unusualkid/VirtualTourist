@@ -23,6 +23,7 @@ class PhotoAlbumViewController: UIViewController {
     var deletePicsEnabled = false
     var pinHasNoImage = false
     var pin: Pin?
+    var isFirstLoad = true
     
     let delegate = UIApplication.shared.delegate as! AppDelegate
     
@@ -106,27 +107,21 @@ class PhotoAlbumViewController: UIViewController {
     }
     
     @IBAction func toolButtonPressed(_ sender: Any) {
+        isFirstLoad = false
         if selectedIndexes.isEmpty {
-            deleteAllPhotos()
+            print("in deleteAllPhotos()")
             
-            FlickrClient.sharedInstance.getImages { (photos, error) in
-                if let photos = photos {
-                    for photo in photos {
-                        let url = URL(string: photo["url_m"] as! String)
-                        let newPhoto = Photo(url: String(describing: url!), isFinishedDownloading: true, context: self.fetchedResultsController.managedObjectContext)
-                        newPhoto.pin = self.pin
-                        
-                        self.photos.append(newPhoto)
-                    }
-                    let delegate = UIApplication.shared.delegate as! AppDelegate
-                    delegate.stack.save()
-                    DispatchQueue.main.async {
-                        self.collectionView.reloadData()
-                    }
-                } else {
-                    print(error ?? "empty error")
-                }
+            for photo in (fetchedResultsController.fetchedObjects)! {
+                delegate.stack.context.delete(photo as! NSManagedObject)
             }
+            
+            DispatchQueue.main.async {
+                self.delegate.stack.save()
+                self.photos.removeAll()
+                self.collectionView.reloadData()
+            }
+            
+            downloadPhotoURL()
             
         } else {
             deleteSelectedPhotos()
@@ -206,8 +201,8 @@ extension PhotoAlbumViewController {
                     newPhoto.pin = self.pin
                     self.photos.append(newPhoto)
                 }
-                self.delegate.stack.save()
                 DispatchQueue.main.async {
+                    self.delegate.stack.save()
                     self.collectionView.reloadData()
                 }
             } else {
@@ -218,26 +213,39 @@ extension PhotoAlbumViewController {
     
     func deleteAllPhotos() {
         print("in deleteAllPhotos()")
+        
         for photo in (fetchedResultsController.fetchedObjects)! {
-            let context = fetchedResultsController.managedObjectContext
-            context.delete(photo as! NSManagedObject)
+            delegate.stack.context.delete(photo as! NSManagedObject)
         }
-        photos.removeAll()
+        
+        DispatchQueue.main.async {
+            self.delegate.stack.save()
+            self.photos.removeAll()
+            self.collectionView.reloadData()
+        }
+        
     }
     
     func deleteSelectedPhotos() {
         print("in deleteSelectedPhotos()")
         var photosToDelete = [Photo]()
-        
-        for indexPath in selectedIndexes {
-            print("indexPath: \(indexPath)")
-            print("indexPath.row: \(indexPath.row)")
-            photos.remove(at: indexPath.row)
-            photosToDelete.append(fetchedResultsController.object(at: indexPath) as! Photo)
-        }
-        
-        for photo in photosToDelete {
-            fetchedResultsController.managedObjectContext.delete(photo)
+        DispatchQueue.main.async {
+            
+            for indexPath in self.selectedIndexes {
+                print("indexPath: \(indexPath)")
+                print("indexPath.row: \(indexPath.row)")
+                
+                self.photos.remove(at: indexPath.row)
+                
+                self.executeSearch()
+                print("fetchedResultsController.object(at: indexPath): \(self.fetchedResultsController.object(at: indexPath))")
+                photosToDelete.append(self.fetchedResultsController.object(at: indexPath) as! Photo)
+            }
+
+            for photo in photosToDelete {
+                self.fetchedResultsController.managedObjectContext.delete(photo)
+            }
+            self.collectionView.reloadData()
         }
         selectedIndexes.removeAll()
     }
@@ -324,6 +332,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
             print("in appending selectedCell")
             print("indexPath: \(indexPath)")
             selectedIndexes.append(indexPath)
+
         }
         
         // Tint the selected cell
