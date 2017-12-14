@@ -19,7 +19,6 @@ class PhotoAlbumViewController: UIViewController {
     @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     
     var selectedIndexes = [IndexPath]()
-    var photos = [Photo]()
     var deletePicsEnabled = false
     var pinHasNoImage = false
     var pin: Pin?
@@ -57,6 +56,8 @@ class PhotoAlbumViewController: UIViewController {
         
         setUpMapView()
         
+        executeSearch()
+        
         DispatchQueue.main.async{
             self.setUpCollectionViewLayout()
         }
@@ -65,29 +66,25 @@ class PhotoAlbumViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
         
-        executeSearch()
-        
         let fetchedPhotos = fetchedResultsController.fetchedObjects as! [Photo]?
         
         if let fetchedPhotos = fetchedPhotos {
             print("in if let fetchedPhotos = fetchedPhotos")
             if fetchedPhotos.isEmpty {
                 print("No image in coredata, downloading URLs from Flickr")
-                downloadPhotoURL()
-                DispatchQueue.main.async {
-                    self.collectionView.reloadData()
-                }
+                loadPhotosIntoCells()
+                
             } else {
                 print("else load image from coredata")
                 for photo in fetchedPhotos {
-                    self.photos.append(photo)
+                    
                 }
                 DispatchQueue.main.async {
                     self.collectionView.reloadData()
                 }
             }
         }
-
+        
         
         // TODO: set noImageLabel to not hidden in this VC
         // If the pin has no related photos in core data, set pinHasNoImage to true
@@ -96,7 +93,7 @@ class PhotoAlbumViewController: UIViewController {
         } else {
             pinHasNoImage = false
         }
-
+        
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -111,7 +108,7 @@ class PhotoAlbumViewController: UIViewController {
         if selectedIndexes.isEmpty {
             deleteAllPhotos()
             
-            downloadPhotoURL()
+            loadPhotosIntoCells()
             
         } else {
             deleteSelectedPhotos()
@@ -181,22 +178,32 @@ extension PhotoAlbumViewController {
         }
     }
     
-    func downloadPhotoURL() {
+    func loadPhotosIntoCells() {
         FlickrClient.sharedInstance.getImages { (photos, error) in
             if let photos = photos {
                 for photo in photos {
                     print("photo: \(photo)")
-                    let url = URL(string: photo["url_m"] as! String)
+                    let url = photo["url_m"] as! String
                     
-                    let newPhoto = Photo(url: String(describing: url!), isFinishedDownloading: true, context: self.fetchedResultsController.managedObjectContext)
-                    
+                    let newPhoto = Photo(url: url, isFinishedDownloading: true, context: self.fetchedResultsController.managedObjectContext)
                     newPhoto.pin = self.pin
-                    self.photos.append(newPhoto)
+                    
+                    FlickrClient.sharedInstance.downloadPhotos(url, completionHandlerForDownloadPhotos: { (downloadedImage, error) in
+                        if let error = error {
+                            print(error.localizedDescription)
+                        } else {
+                            if let downloadedImage = downloadedImage {
+                                newPhoto.imageData = downloadedImage as NSData
+                                self.delegate.stack.save()
+                            }
+                        }
+                        DispatchQueue.main.async {
+                            self.collectionView.reloadData()
+                        }
+
+                    })
                 }
-                DispatchQueue.main.async {
-                    self.delegate.stack.save()
-                    self.collectionView.reloadData()
-                }
+                
             } else {
                 print(error ?? "empty error")
             }
@@ -206,7 +213,7 @@ extension PhotoAlbumViewController {
     func deleteAllPhotos() {
         print("in deleteAllPhotos()")
         
-        self.photos.removeAll()
+        //        self.photos.removeAll()
         
         executeSearch()
         for photo in (self.fetchedResultsController.fetchedObjects)! {
@@ -236,10 +243,6 @@ extension PhotoAlbumViewController {
             print("Removing from core data, photo: \(photo)")
             delegate.stack.context.delete(photo)
             
-            if let index = self.photos.index(of: photo) {
-                print("Removing from local array self.photos, photo: \(photos[index])")
-                photos.remove(at: index)
-            }
         }
         
         DispatchQueue.main.async {
@@ -267,20 +270,24 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 }
 
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
-//    func numberOfSections(in collectionView: UICollectionView) -> Int {
-//        print("in numberOfSectionsInCollectionView()")
-//        return self.fetchedResultsController.sections?.count ?? 0
-//    }
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        print("in numberOfSectionsInCollectionView()")
+        print("number Of Sections: \(self.fetchedResultsController.sections?.count ?? 0)")
+        return self.fetchedResultsController.sections?.count ?? 0
+    }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("in collectionView(_:numberOfItemsInSection)")
-        print("photos.count: \(photos.count)")
-        return photos.count
+        self.executeSearch()
+        
+        let sectionInfo = self.fetchedResultsController.sections![section]
+        print("sectionInfo: \(self.fetchedResultsController.sections![section].objects)")
+        print("number Of Cells: \(sectionInfo.numberOfObjects)")
+        return sectionInfo.numberOfObjects
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         print("in collectionView(_:cellForItemAtIndexPath)")
-        
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
         
@@ -290,33 +297,11 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         cell.activityIndicator.startAnimating()
         cell.activityIndicator.isHidden = false
         
-        let photo = photos[indexPath.row]
+        let photo = fetchedResultsController.object(at: indexPath) as! Photo
         if let photoImage = photo.imageData {
             DispatchQueue.main.async {
                 cell.activityIndicator.stopAnimating()
                 cell.imageView?.image = UIImage(data: photoImage as Data)
-            }
-        } else {
-            if let url = photo.url {
-                FlickrClient.sharedInstance.downloadPhotos(url, completionHandlerForDownloadPhotos: { (downloadedImage, error) in
-                    if let error = error {
-                        print(error.localizedDescription)
-                    } else {
-                        if let downloadedImage = downloadedImage {
-                            photo.imageData = downloadedImage as NSData
-                            
-                            self.executeSearch()
-                            let photoInCoreData = self.fetchedResultsController.object(at: indexPath) as! Photo
-                            photoInCoreData.imageData = downloadedImage as NSData
-                            self.delegate.stack.save()
-                            DispatchQueue.main.async {
-                                cell.activityIndicator.stopAnimating()
-                                cell.imageView?.image = UIImage(data: downloadedImage)
-                                print("cell.imageView?.image: \(cell.imageView?.image)")
-                            }
-                        }
-                    }
-                })
             }
         }
         return cell
@@ -341,7 +326,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
             print("in appending selectedCell")
             print("indexPath: \(indexPath)")
             selectedIndexes.append(indexPath)
-
+            
         }
         print("selectedIndexes: \(selectedIndexes)")
         

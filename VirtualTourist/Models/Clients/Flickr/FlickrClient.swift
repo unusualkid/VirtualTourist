@@ -38,6 +38,7 @@ class FlickrClient: NSObject {
                     print("No data was downloaded from the given URL.")
                     return
                 }
+                print("imageData: \(imageData)")
                 completionHandlerForDownloadPhotos(imageData, nil)
             }
         }
@@ -63,8 +64,6 @@ class FlickrClient: NSObject {
             if success {
                 self.getImagesStep2(parameters, withPageNumber: randomPageNumber!) {(photos, error) in
                     print("self.getImagesStep2(parameters, withPageNumber: randomPageNumber!)")
-                    print("photos: \(photos)")
-                    print("error: \(error)")
                     if error != nil {
                         print("if error != nil")
                         completionHandlerForGetImages(photos, nil)
