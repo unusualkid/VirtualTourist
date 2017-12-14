@@ -114,24 +114,7 @@ class PhotoAlbumViewController: UIViewController {
             downloadPhotoURL()
             
         } else {
-            print("in deleteSelectedPhotos()")
-            var photosToDelete = [Photo]()
-            
-            for indexPath in self.selectedIndexes {
-                print("indexPath: \(indexPath)")
-                print("indexPath.row: \(indexPath.row)")
-                
-                self.photos.remove(at: indexPath.row)
-                
-                self.executeSearch()
-                print("fetchedResultsController.object(at: indexPath): \(self.fetchedResultsController.object(at: indexPath))")
-                photosToDelete.append(self.fetchedResultsController.object(at: indexPath) as! Photo)
-            }
-            
-            for photo in photosToDelete {
-                self.fetchedResultsController.managedObjectContext.delete(photo)
-            }
-            self.collectionView.reloadData()
+            deleteSelectedPhotos()
         }
         selectedIndexes.removeAll()
         
@@ -239,25 +222,30 @@ extension PhotoAlbumViewController {
     func deleteSelectedPhotos() {
         print("in deleteSelectedPhotos()")
         var photosToDelete = [Photo]()
-        DispatchQueue.main.async {
+        
+        for indexPath in selectedIndexes {
+            print("indexPath: \(indexPath)")
+            print("indexPath.row: \(indexPath.row)")
             
-            for indexPath in self.selectedIndexes {
-                print("indexPath: \(indexPath)")
-                print("indexPath.row: \(indexPath.row)")
-                
-                self.photos.remove(at: indexPath.row)
-                
-                self.executeSearch()
-                print("fetchedResultsController.object(at: indexPath): \(self.fetchedResultsController.object(at: indexPath))")
-                photosToDelete.append(self.fetchedResultsController.object(at: indexPath) as! Photo)
+            executeSearch()
+            print("fetchedResultsController.object(at: indexPath): \(fetchedResultsController.object(at: indexPath))")
+            photosToDelete.append(fetchedResultsController.object(at: indexPath) as! Photo)
+        }
+        
+        for photo in photosToDelete {
+            print("Removing from core data, photo: \(photo)")
+            delegate.stack.context.delete(photo)
+            
+            if let index = self.photos.index(of: photo) {
+                print("Removing from local array self.photos, photo: \(photos[index])")
+                photos.remove(at: index)
             }
-
-            for photo in photosToDelete {
-                self.fetchedResultsController.managedObjectContext.delete(photo)
-            }
+        }
+        
+        DispatchQueue.main.async {
+            self.delegate.stack.save()
             self.collectionView.reloadData()
         }
-        selectedIndexes.removeAll()
     }
 }
 
@@ -293,7 +281,10 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         print("in collectionView(_:cellForItemAtIndexPath)")
         
+        
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
+        
+        cell.imageView.alpha = 1.0
         cell.imageView?.image = nil
         cell.activityIndicator.hidesWhenStopped = true
         cell.activityIndicator.startAnimating()
@@ -301,21 +292,27 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         
         let photo = photos[indexPath.row]
         if let photoImage = photo.imageData {
-            print("in if let photoImage = photo.imageData")
             DispatchQueue.main.async {
                 cell.activityIndicator.stopAnimating()
                 cell.imageView?.image = UIImage(data: photoImage as Data)
             }
         } else {
             if let url = photo.url {
-                FlickrClient.sharedInstance.downloadPhotos(url, completionHandlerForDownloadPhotos: { (imageData, error) in
+                FlickrClient.sharedInstance.downloadPhotos(url, completionHandlerForDownloadPhotos: { (downloadedImage, error) in
                     if let error = error {
                         print(error.localizedDescription)
                     } else {
-                        if let imageData = imageData {
+                        if let downloadedImage = downloadedImage {
+                            photo.imageData = downloadedImage as NSData
+                            
+                            self.executeSearch()
+                            let photoInCoreData = self.fetchedResultsController.object(at: indexPath) as! Photo
+                            photoInCoreData.imageData = downloadedImage as NSData
+                            self.delegate.stack.save()
                             DispatchQueue.main.async {
                                 cell.activityIndicator.stopAnimating()
-                                cell.imageView?.image = UIImage(data: imageData)
+                                cell.imageView?.image = UIImage(data: downloadedImage)
+                                print("cell.imageView?.image: \(cell.imageView?.image)")
                             }
                         }
                     }
@@ -332,6 +329,8 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         
         print("selectedCell IndexPath: \(indexPath)")
         
+        print("cell.imageView?.image: \(cell.imageView?.image)")
+        
         // If selected cell is not in selectedIndexes array, append it
         if let index = selectedIndexes.index(of: indexPath) {
             print("in removing selectedCell")
@@ -344,6 +343,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
             selectedIndexes.append(indexPath)
 
         }
+        print("selectedIndexes: \(selectedIndexes)")
         
         // Tint the selected cell
         configureCell(cell, atIndexPath: indexPath)

@@ -155,19 +155,19 @@ extension CoreDataStack {
         if delayInSeconds > 0 {
             do {
                 save()
-                print("Autosaving")
+//                print("Autosaving")
                 let delegate = UIApplication.shared.delegate as! AppDelegate
                 let fetchRequestPin = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
                 let pins = try delegate.stack.backgroundContext.fetch(fetchRequestPin) as! [Pin]
                 let fetchRequestPhoto = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
                 let photos = try delegate.stack.backgroundContext.fetch(fetchRequestPhoto) as! [Photo]
-                print("PINS: \(pins.count)")
+//                print("PINS: \(pins.count)")
                 for pin in pins {
-                    print("pin \(pins.index(of: pin)): \(pin)")
+//                    print("pin \(pins.index(of: pin)): \(pin)")
                 }
-                print("\nPHOTOS: \(photos.count)")
+//                print("\nPHOTOS: \(photos.count)")
                 for photo in photos {
-                    print("photo \(photos.index(of: photo)): \(photo)")
+//                    print("photo \(photos.index(of: photo)): \(photo)")
                 }
             } catch {
                 print("Error while autosaving")
