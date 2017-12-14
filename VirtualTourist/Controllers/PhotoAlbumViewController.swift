@@ -72,7 +72,10 @@ class PhotoAlbumViewController: UIViewController {
             print("in if let fetchedPhotos = fetchedPhotos")
             if fetchedPhotos.isEmpty {
                 print("No image in coredata, downloading URLs from Flickr")
-                loadPhotosIntoCells()
+                downloadPhotoUrls()
+                
+                
+                
                 
             } else {
                 print("else load image from coredata")
@@ -108,7 +111,7 @@ class PhotoAlbumViewController: UIViewController {
         if selectedIndexes.isEmpty {
             deleteAllPhotos()
             
-            loadPhotosIntoCells()
+            downloadPhotoUrls()
             
         } else {
             deleteSelectedPhotos()
@@ -177,43 +180,59 @@ extension PhotoAlbumViewController {
             cell.imageView.alpha = 1.0
         }
     }
-    
-    func loadPhotosIntoCells() {
+
+    func downloadPhotoUrls() {
         FlickrClient.sharedInstance.getImages { (photos, error) in
             if let photos = photos {
+                var urls = [String]()
                 for photo in photos {
                     print("photo: \(photo)")
                     let url = photo["url_m"] as! String
+                    urls.append(url)
                     
                     let newPhoto = Photo(url: url, isFinishedDownloading: true, context: self.fetchedResultsController.managedObjectContext)
                     newPhoto.pin = self.pin
-                    
-                    FlickrClient.sharedInstance.downloadPhotos(url, completionHandlerForDownloadPhotos: { (downloadedImage, error) in
-                        if let error = error {
-                            print(error.localizedDescription)
-                        } else {
-                            if let downloadedImage = downloadedImage {
-                                newPhoto.imageData = downloadedImage as NSData
-                                self.delegate.stack.save()
-                            }
-                        }
-                        DispatchQueue.main.async {
-                            self.collectionView.reloadData()
-                        }
-
-                    })
                 }
-                
+                self.delegate.stack.save()
+                DispatchQueue.main.async {
+                    self.collectionView.reloadData()
+                }
+                self.downloadPhotosOntoCells(urls)
             } else {
                 print(error ?? "empty error")
             }
         }
     }
     
+    func downloadPhotosOntoCells(_ urls: [String]) {
+        for url in urls {
+            FlickrClient.sharedInstance.downloadPhotos(url, completionHandlerForDownloadPhotos: { (downloadedImage, error) in
+                if let error = error {
+                    print(error.localizedDescription)
+                } else {
+                    print("url: \(url)")
+                    self.executeSearch()
+                    let photos = self.fetchedResultsController.fetchedObjects as! [Photo]
+                    for photo in photos {
+                        if url == photo.url! {
+                            photo.imageData = downloadedImage as NSData?
+                            let indexPath = self.fetchedResultsController.indexPath(forObject: photo)
+                            print("indexPath: \(indexPath)")
+                            var indexPaths = [IndexPath]()
+                            indexPaths.append(indexPath!)
+                            
+                            DispatchQueue.main.async {
+                                self.collectionView.reloadItems(at: indexPaths)
+                            }
+                        }
+                    }
+                }
+            })
+        }
+    }
+    
     func deleteAllPhotos() {
         print("in deleteAllPhotos()")
-        
-        //        self.photos.removeAll()
         
         executeSearch()
         for photo in (self.fetchedResultsController.fetchedObjects)! {
@@ -228,6 +247,7 @@ extension PhotoAlbumViewController {
     
     func deleteSelectedPhotos() {
         print("in deleteSelectedPhotos()")
+        
         var photosToDelete = [Photo]()
         
         for indexPath in selectedIndexes {

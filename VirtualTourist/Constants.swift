@@ -64,7 +64,7 @@ struct Constants {
         static let Photos = "photos"
         static let Photo = "photo"
         static let Title = "title"
-        static let MediumURL = "url_m"
+        static let Url = "url_m"
         static let Pages = "pages"
         static let Total = "total"
     }
