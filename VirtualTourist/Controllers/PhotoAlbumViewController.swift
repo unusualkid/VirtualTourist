@@ -109,23 +109,32 @@ class PhotoAlbumViewController: UIViewController {
     @IBAction func toolButtonPressed(_ sender: Any) {
         isFirstLoad = false
         if selectedIndexes.isEmpty {
-            print("in deleteAllPhotos()")
-            
-            for photo in (fetchedResultsController.fetchedObjects)! {
-                delegate.stack.context.delete(photo as! NSManagedObject)
-            }
-            
-            DispatchQueue.main.async {
-                self.delegate.stack.save()
-                self.photos.removeAll()
-                self.collectionView.reloadData()
-            }
+            deleteAllPhotos()
             
             downloadPhotoURL()
             
         } else {
-            deleteSelectedPhotos()
+            print("in deleteSelectedPhotos()")
+            var photosToDelete = [Photo]()
+            
+            for indexPath in self.selectedIndexes {
+                print("indexPath: \(indexPath)")
+                print("indexPath.row: \(indexPath.row)")
+                
+                self.photos.remove(at: indexPath.row)
+                
+                self.executeSearch()
+                print("fetchedResultsController.object(at: indexPath): \(self.fetchedResultsController.object(at: indexPath))")
+                photosToDelete.append(self.fetchedResultsController.object(at: indexPath) as! Photo)
+            }
+            
+            for photo in photosToDelete {
+                self.fetchedResultsController.managedObjectContext.delete(photo)
+            }
+            self.collectionView.reloadData()
         }
+        selectedIndexes.removeAll()
+        
         updateToolButton()
     }
     
@@ -214,16 +223,17 @@ extension PhotoAlbumViewController {
     func deleteAllPhotos() {
         print("in deleteAllPhotos()")
         
-        for photo in (fetchedResultsController.fetchedObjects)! {
-            delegate.stack.context.delete(photo as! NSManagedObject)
+        self.photos.removeAll()
+        
+        executeSearch()
+        for photo in (self.fetchedResultsController.fetchedObjects)! {
+            self.delegate.stack.context.delete(photo as! NSManagedObject)
         }
+        self.delegate.stack.save()
         
         DispatchQueue.main.async {
-            self.delegate.stack.save()
-            self.photos.removeAll()
             self.collectionView.reloadData()
         }
-        
     }
     
     func deleteSelectedPhotos() {
@@ -284,7 +294,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         print("in collectionView(_:cellForItemAtIndexPath)")
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoAlbumViewCell", for: indexPath) as! PhotoAlbumViewCell
-        
+        cell.imageView?.image = nil
         cell.activityIndicator.hidesWhenStopped = true
         cell.activityIndicator.startAnimating()
         cell.activityIndicator.isHidden = false
