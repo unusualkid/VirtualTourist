@@ -216,12 +216,8 @@ class FlickrClient: NSObject {
                 return
             }
             
-            if photosArray.count == 0 {
-                displayError("No Photos Found. Search Again.")
-                return
-            } else {
-                completionHandlerForGetImages(photosArray, nil)
-            }
+            completionHandlerForGetImages(photosArray, nil)
+            
         }
         
         // start the task!

@@ -20,9 +20,8 @@ class PhotoAlbumViewController: UIViewController {
     
     var selectedIndexes = [IndexPath]()
     var deletePicsEnabled = false
-    var pinHasNoImage = false
     var pin: Pin?
-    var isFirstLoad = true
+    var noImageFound = false
     
     let delegate = UIApplication.shared.delegate as! AppDelegate
     
@@ -69,34 +68,11 @@ class PhotoAlbumViewController: UIViewController {
         let fetchedPhotos = fetchedResultsController.fetchedObjects as! [Photo]?
         
         if let fetchedPhotos = fetchedPhotos {
-            print("in if let fetchedPhotos = fetchedPhotos")
             if fetchedPhotos.isEmpty {
                 print("No image in coredata, downloading URLs from Flickr")
-                downloadPhotoUrls()
-                
-                
-                
-                
-            } else {
-                print("else load image from coredata")
-                for photo in fetchedPhotos {
-                    
-                }
-                DispatchQueue.main.async {
-                    self.collectionView.reloadData()
-                }
+                downloadPhotos()
             }
         }
-        
-        
-        // TODO: set noImageLabel to not hidden in this VC
-        // If the pin has no related photos in core data, set pinHasNoImage to true
-        if fetchedResultsController.fetchedObjects?.count == 0 {
-            pinHasNoImage = true
-        } else {
-            pinHasNoImage = false
-        }
-        
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -107,17 +83,14 @@ class PhotoAlbumViewController: UIViewController {
     }
     
     @IBAction func toolButtonPressed(_ sender: Any) {
-        isFirstLoad = false
         if selectedIndexes.isEmpty {
             deleteAllPhotos()
-            
-            downloadPhotoUrls()
+            downloadPhotos()
             
         } else {
             deleteSelectedPhotos()
         }
         selectedIndexes.removeAll()
-        
         updateToolButton()
     }
     
@@ -147,8 +120,8 @@ extension PhotoAlbumViewController {
         
         let region = MKCoordinateRegionMakeWithDistance(coordinate, 10000, 10000)
         mapView.setRegion(region, animated: true)
-        
         mapView.addAnnotation(annotation)
+        
     }
     
     func setUpCollectionViewLayout() {
@@ -181,10 +154,18 @@ extension PhotoAlbumViewController {
         }
     }
 
-    func downloadPhotoUrls() {
+    func downloadPhotos() {
         FlickrClient.sharedInstance.getImages { (photos, error) in
             if let photos = photos {
                 var urls = [String]()
+                
+                if photos.isEmpty {
+                    print("photos.isEmpty")
+                    DispatchQueue.main.async {
+                        self.noImageLabel.isHidden = false
+                    }
+                }
+                
                 for photo in photos {
                     print("photo: \(photo)")
                     let url = photo["url_m"] as! String
@@ -292,17 +273,15 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         print("in numberOfSectionsInCollectionView()")
-        print("number Of Sections: \(self.fetchedResultsController.sections?.count ?? 0)")
+
         return self.fetchedResultsController.sections?.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("in collectionView(_:numberOfItemsInSection)")
-        self.executeSearch()
         
+        self.executeSearch()
         let sectionInfo = self.fetchedResultsController.sections![section]
-        print("sectionInfo: \(self.fetchedResultsController.sections![section].objects)")
-        print("number Of Cells: \(sectionInfo.numberOfObjects)")
         return sectionInfo.numberOfObjects
     }
     
@@ -324,6 +303,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
                 cell.imageView?.image = UIImage(data: photoImage as Data)
             }
         }
+        
         return cell
     }
     
@@ -331,10 +311,6 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         print("in collectionView(_:didSelectItemAtIndexPath)")
         
         let cell = collectionView.cellForItem(at: indexPath) as! PhotoAlbumViewCell
-        
-        print("selectedCell IndexPath: \(indexPath)")
-        
-        print("cell.imageView?.image: \(cell.imageView?.image)")
         
         // If selected cell is not in selectedIndexes array, append it
         if let index = selectedIndexes.index(of: indexPath) {
