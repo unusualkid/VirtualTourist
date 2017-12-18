@@ -81,14 +81,11 @@ class MapViewController: UIViewController {
         if gestureRecognizer.state == .began {
             let touchPoint = gestureRecognizer.location(in: mapView)
             let coordinates = mapView.convert(touchPoint, toCoordinateFrom: mapView)
-            let annotation = MKPointAnnotation()
-            //            let delegate = UIApplication.shared.delegate as! AppDelegate
-            let moc = fetchedResultsController.managedObjectContext
+            let moc = delegate.stack.context
             let pin = Pin(lat: coordinates.latitude, lon: coordinates.longitude, context: moc)
-            
+            let annotation = MKPointAnnotation()
             annotation.coordinate = coordinates
             mapView.addAnnotation(annotation)
-
         }
     }
     

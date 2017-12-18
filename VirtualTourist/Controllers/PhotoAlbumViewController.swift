@@ -166,7 +166,8 @@ extension PhotoAlbumViewController {
                     }
                 }
                 
-                for photo in photos {
+                let slicedPhotos = photos[..<12]
+                for photo in slicedPhotos {
                     print("photo: \(photo)")
                     let url = photo["url_m"] as! String
                     urls.append(url)
