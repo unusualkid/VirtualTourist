@@ -55,6 +55,8 @@ class PhotoAlbumViewController: UIViewController {
         
         setUpMapView()
         
+        fetchedResultsController.delegate = self
+        
         executeSearch()
         
         DispatchQueue.main.async{
